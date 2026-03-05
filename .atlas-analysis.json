@@ -1,0 +1,79 @@
+{
+  "projectType": "frontend",
+  "projectName": "Sushi Restaurant App",
+  "projectDescription": "An Ionic Angular mobile application for browsing and managing a seafood restaurant menu",
+  "theme": "almond",
+  "primaryColor": "#277bfc",
+  "lightColor": "#8bbcfc",
+  "darkColor": "#041c3c",
+  "navigation": {
+    "groups": [
+      {
+        "group": "Getting Started",
+        "pages": [
+          "introduction",
+          "quickstart"
+        ]
+      },
+      {
+        "group": "Core Concepts",
+        "pages": [
+          "architecture/overview",
+          "architecture/project-structure",
+          "architecture/routing"
+        ]
+      },
+      {
+        "group": "Components",
+        "pages": [
+          "components/home-page",
+          "components/detail-page"
+        ]
+      },
+      {
+        "group": "Services",
+        "pages": [
+          "services/registros-service"
+        ]
+      },
+      {
+        "group": "Models",
+        "pages": [
+          "models/registro"
+        ]
+      },
+      {
+        "group": "Development",
+        "pages": [
+          "development/setup",
+          "development/running",
+          "development/building",
+          "development/testing"
+        ]
+      },
+      {
+        "group": "Styling",
+        "pages": [
+          "styling/tailwind",
+          "styling/ionic-themes"
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Ionic Angular framework with Capacitor for mobile deployment",
+    "Restaurant menu browsing with seafood dishes",
+    "Detail view with ingredients and dish information",
+    "Delete functionality with confirmation dialogs",
+    "Tailwind CSS styling with custom marine theme",
+    "Lazy-loaded routing architecture"
+  ],
+  "publicApiSurface": [
+    "RegistrosServiceTs.getRegistros()",
+    "RegistrosServiceTs.getRegistro(registroId: string)",
+    "RegistrosServiceTs.deleteRegistro(registroId: string)",
+    "HomePage component",
+    "DetalleRegistroPage component",
+    "Registro interface"
+  ]
+}
