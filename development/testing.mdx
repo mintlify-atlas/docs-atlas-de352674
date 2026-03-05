@@ -1,0 +1,521 @@
+---
+title: 'Testing'
+description: 'Run tests and ensure code quality for the Sushi Restaurant App'
+---
+
+## Quick Start
+
+Run all tests with:
+
+```bash
+npm test
+```
+
+This command runs `ng test` and starts the Karma test runner.
+
+## Test Framework
+
+The project uses the following testing stack:
+
+<CardGroup cols={2}>
+  <Card title="Jasmine" icon="flask">
+    v5.1.0 - Testing framework
+  </Card>
+  <Card title="Karma" icon="circle-play">
+    v6.4.0 - Test runner
+  </Card>
+  <Card title="Chrome Launcher" icon="chrome">
+    Runs tests in Chrome browser
+  </Card>
+  <Card title="Coverage Reports" icon="chart-line">
+    HTML and text summary reports
+  </Card>
+</CardGroup>
+
+## Karma Configuration
+
+The test environment is configured in `karma.conf.js`:
+
+```javascript karma.conf.js
+module.exports = function (config) {
+  config.set({
+    basePath: '',
+    frameworks: ['jasmine', '@angular-devkit/build-angular'],
+    plugins: [
+      require('karma-jasmine'),
+      require('karma-chrome-launcher'),
+      require('karma-jasmine-html-reporter'),
+      require('karma-coverage'),
+      require('@angular-devkit/build-angular/plugins/karma')
+    ],
+    client: {
+      jasmine: {
+        // Configuration options for Jasmine
+        // Can disable random execution with `random: false`
+        // or set a specific seed with `seed: 4321`
+      },
+      clearContext: false // leave Jasmine Spec Runner output visible
+    },
+    jasmineHtmlReporter: {
+      suppressAll: true // removes duplicated traces
+    },
+    coverageReporter: {
+      dir: require('path').join(__dirname, './coverage/app'),
+      subdir: '.',
+      reporters: [
+        { type: 'html' },
+        { type: 'text-summary' }
+      ]
+    },
+    reporters: ['progress', 'kjhtml'],
+    port: 9876,
+    colors: true,
+    logLevel: config.LOG_INFO,
+    autoWatch: true,
+    browsers: ['Chrome'],
+    singleRun: false,
+    restartOnFileChange: true
+  });
+};
+```
+
+## Running Tests
+
+### Interactive Mode (Default)
+
+Run tests with watch mode and live browser preview:
+
+```bash
+npm test
+```
+
+<Info>
+  Tests run in Chrome by default and automatically rerun when files change. The Jasmine HTML reporter displays results in the browser.
+</Info>
+
+### Single Run Mode
+
+Run tests once and exit (useful for CI/CD):
+
+```bash
+ng test --watch=false
+```
+
+### Headless Mode
+
+Run tests in headless Chrome:
+
+```bash
+ng test --browsers=ChromeHeadless --watch=false
+```
+
+### CI Configuration
+
+For continuous integration environments:
+
+```bash
+ng test --configuration ci
+```
+
+The CI configuration (`angular.json`):
+- Disables progress output for cleaner logs
+- Runs without watch mode
+
+## Code Coverage
+
+### Generate Coverage Reports
+
+Run tests with coverage:
+
+```bash
+ng test --code-coverage --watch=false
+```
+
+Coverage reports are generated in the `coverage/app/` directory.
+
+### View Coverage
+
+<Steps>
+  <Step title="Generate Coverage">
+    ```bash
+    ng test --code-coverage --watch=false
+    ```
+  </Step>
+  
+  <Step title="Open HTML Report">
+    ```bash
+    open coverage/app/index.html
+    # or on Linux
+    xdg-open coverage/app/index.html
+    ```
+  </Step>
+</Steps>
+
+### Coverage Configuration
+
+The coverage reporter generates two types of reports:
+
+1. **HTML Report**: Interactive browser-based coverage report
+2. **Text Summary**: Console output showing coverage percentages
+
+```javascript karma.conf.js (excerpt)
+coverageReporter: {
+  dir: require('path').join(__dirname, './coverage/app'),
+  subdir: '.',
+  reporters: [
+    { type: 'html' },
+    { type: 'text-summary' }
+  ]
+}
+```
+
+## Test File Structure
+
+Test files follow Angular conventions:
+
+```
+src/
+├── app/
+│   ├── components/
+│   │   ├── menu-item.component.ts
+│   │   ├── menu-item.component.spec.ts  ← Test file
+│   ├── services/
+│   │   ├── order.service.ts
+│   │   ├── order.service.spec.ts        ← Test file
+│   └── app.component.spec.ts
+└── test.ts                               ← Test entry point
+```
+
+<Info>
+  Test files are named with `.spec.ts` suffix and located next to the files they test.
+</Info>
+
+## Writing Tests
+
+### Component Test Example
+
+```typescript menu-item.component.spec.ts
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MenuItemComponent } from './menu-item.component';
+
+describe('MenuItemComponent', () => {
+  let component: MenuItemComponent;
+  let fixture: ComponentFixture<MenuItemComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [MenuItemComponent]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(MenuItemComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+
+  it('should display item name', () => {
+    component.item = { name: 'California Roll', price: 8.99 };
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement;
+    expect(compiled.querySelector('.item-name')?.textContent)
+      .toContain('California Roll');
+  });
+});
+```
+
+### Service Test Example
+
+```typescript order.service.spec.ts
+import { TestBed } from '@angular/core/testing';
+import { OrderService } from './order.service';
+
+describe('OrderService', () => {
+  let service: OrderService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(OrderService);
+  });
+
+  it('should be created', () => {
+    expect(service).toBeTruthy();
+  });
+
+  it('should add item to cart', () => {
+    const item = { id: 1, name: 'Sushi', price: 10 };
+    service.addToCart(item);
+    expect(service.getCartItems()).toContain(item);
+  });
+
+  it('should calculate total price', () => {
+    service.addToCart({ id: 1, name: 'Roll', price: 8.99 });
+    service.addToCart({ id: 2, name: 'Sashimi', price: 12.99 });
+    expect(service.getTotalPrice()).toBe(21.98);
+  });
+});
+```
+
+## Test Configuration Files
+
+### TypeScript Configuration
+
+Tests use a dedicated TypeScript config (`tsconfig.spec.json`):
+
+```json tsconfig.spec.json
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/spec",
+    "types": [
+      "jasmine"
+    ]
+  },
+  "files": [
+    "src/test.ts",
+    "src/polyfills.ts"
+  ],
+  "include": [
+    "src/**/*.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}
+```
+
+### Test Entry Point
+
+The `src/test.ts` file initializes the test environment:
+
+```typescript test.ts
+import 'zone.js/testing';
+import { getTestBed } from '@angular/core/testing';
+import {
+  BrowserDynamicTestingModule,
+  platformBrowserDynamicTesting
+} from '@angular/platform-browser-dynamic/testing';
+
+// Initialize Angular testing environment
+getTestBed().initTestEnvironment(
+  BrowserDynamicTestingModule,
+  platformBrowserDynamicTesting()
+);
+```
+
+## Advanced Testing
+
+### Custom Karma Configuration
+
+You can customize Jasmine behavior in `karma.conf.js`:
+
+```javascript
+client: {
+  jasmine: {
+    random: false,        // Disable random test order
+    seed: 12345,          // Use fixed seed for reproducibility
+    stopSpecOnExpectationFailure: false,
+    stopOnSpecFailure: false
+  }
+}
+```
+
+### Debugging Tests
+
+<Steps>
+  <Step title="Start Test Runner">
+    ```bash
+    npm test
+    ```
+  </Step>
+  
+  <Step title="Open Chrome DevTools">
+    Click "DEBUG" in the Karma browser window
+  </Step>
+  
+  <Step title="Set Breakpoints">
+    Open DevTools (F12) and set breakpoints in your test or source code
+  </Step>
+  
+  <Step title="Refresh to Rerun">
+    Refresh the page to rerun tests with breakpoints active
+  </Step>
+</Steps>
+
+### Run Specific Tests
+
+Use Jasmine's `fdescribe` and `fit` to focus on specific tests:
+
+```typescript
+// Run only this suite
+fdescribe('OrderService', () => {
+  // ...
+});
+
+// Run only this test
+fit('should calculate total', () => {
+  // ...
+});
+```
+
+<Warning>
+  Remember to remove `fdescribe` and `fit` before committing. They're for local debugging only.
+</Warning>
+
+### Skip Tests
+
+Use `xdescribe` and `xit` to temporarily skip tests:
+
+```typescript
+// Skip this suite
+xdescribe('PaymentService', () => {
+  // ...
+});
+
+// Skip this test
+xit('should process payment', () => {
+  // ...
+});
+```
+
+## Linting
+
+Run ESLint to check code quality:
+
+```bash
+npm run lint
+```
+
+The project uses:
+- **ESLint**: v9.16.0 with Angular-specific rules
+- **TypeScript ESLint**: v8.18.0 for TypeScript linting
+
+### Lint Configuration
+
+Lint rules are configured in `angular.json`:
+
+```json angular.json (excerpt)
+"lint": {
+  "builder": "@angular-eslint/builder:lint",
+  "options": {
+    "lintFilePatterns": [
+      "src/**/*.ts",
+      "src/**/*.html"
+    ]
+  }
+}
+```
+
+## CI/CD Integration
+
+For continuous integration pipelines:
+
+<CodeGroup>
+```yaml .github/workflows/test.yml
+name: Test
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test -- --watch=false --code-coverage
+      - run: npm run build -- --configuration production
+```
+
+```yaml .gitlab-ci.yml
+test:
+  image: node:18
+  script:
+    - npm ci
+    - npm run lint
+    - npm test -- --watch=false --code-coverage
+    - npm run build -- --configuration production
+  coverage: '/Lines\s*:\s*(\d+\.\d+)%/'
+  artifacts:
+    paths:
+      - coverage/
+```
+</CodeGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Chrome Not Found">
+    Install Chrome or use ChromeHeadless:
+    
+    ```bash
+    ng test --browsers=ChromeHeadless
+    ```
+    
+    For CI environments, ensure Chrome is installed:
+    
+    ```bash
+    # Ubuntu/Debian
+    apt-get install chromium-browser
+    ```
+  </Accordion>
+  
+  <Accordion title="Tests Timing Out">
+    Increase the Jasmine timeout in `karma.conf.js`:
+    
+    ```javascript
+    client: {
+      jasmine: {
+        timeoutInterval: 10000  // 10 seconds
+      }
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Memory Issues">
+    Increase Node.js memory for large test suites:
+    
+    ```bash
+    NODE_OPTIONS=--max_old_space_size=4096 npm test
+    ```
+  </Accordion>
+  
+  <Accordion title="Port Already in Use">
+    Karma uses port 9876 by default. Change it in `karma.conf.js`:
+    
+    ```javascript
+    port: 9877,
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Test Coverage" icon="percent">
+    Aim for at least 80% code coverage for critical business logic
+  </Card>
+  <Card title="Test Isolation" icon="cube">
+    Each test should be independent and not rely on test execution order
+  </Card>
+  <Card title="Mock Dependencies" icon="wrench">
+    Use TestBed to provide mock services and dependencies
+  </Card>
+  <Card title="Test Behavior" icon="brain">
+    Focus on testing behavior and user interactions, not implementation details
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Building" icon="hammer" href="/development/building">
+    Create production builds for deployment
+  </Card>
+  <Card title="Architecture" icon="diagram-project" href="/architecture/overview">
+    Understand the app architecture
+  </Card>
+</CardGroup>

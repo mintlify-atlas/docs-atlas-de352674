@@ -1,0 +1,371 @@
+---
+title: 'Building the Application'
+description: 'Create optimized production builds for web and native platforms'
+---
+
+## Quick Build
+
+Create a production build with:
+
+```bash
+npm run build
+```
+
+This runs `ng build` with the production configuration by default.
+
+## Build Output
+
+Builds are output to the `www/` directory as configured in `angular.json`:
+
+```
+www/
+├── index.html
+├── main.[hash].js
+├── polyfills.[hash].js
+├── runtime.[hash].js
+├── styles.[hash].css
+└── assets/
+```
+
+<Info>
+  The `www` directory is used as the `webDir` in Capacitor configuration for native builds.
+</Info>
+
+## Build Configurations
+
+### Production Build (Default)
+
+The production build includes:
+
+<CardGroup cols={2}>
+  <Card title="Optimization" icon="gauge-high">
+    Minification and tree-shaking enabled
+  </Card>
+  <Card title="Output Hashing" icon="hashtag">
+    Cache-busting filenames
+  </Card>
+  <Card title="File Replacement" icon="file">
+    Uses `environment.prod.ts`
+  </Card>
+  <Card title="Build Budgets" icon="scale-balanced">
+    Enforced size limits
+  </Card>
+</CardGroup>
+
+#### Build Budgets
+
+The production build enforces the following size limits:
+
+```json angular.json (excerpt)
+{
+  "budgets": [
+    {
+      "type": "initial",
+      "maximumWarning": "2mb",
+      "maximumError": "5mb"
+    },
+    {
+      "type": "anyComponentStyle",
+      "maximumWarning": "2kb",
+      "maximumError": "4kb"
+    }
+  ]
+}
+```
+
+<Warning>
+  If your build exceeds the error budget, the build will fail. Optimize your bundle size or adjust budgets in `angular.json`.
+</Warning>
+
+### Development Build
+
+For a development build without optimizations:
+
+```bash
+ng build --configuration development
+```
+
+Development builds:
+- Include source maps for debugging
+- Skip optimization for faster builds
+- Use separate vendor chunks
+- Include named chunks for easier debugging
+- Do not use output hashing
+
+### CI Build
+
+For continuous integration environments:
+
+```bash
+ng build --configuration ci
+```
+
+The CI configuration disables progress output for cleaner logs.
+
+## Building for Native Platforms
+
+### Capacitor Configuration
+
+The app uses Capacitor 8 for native functionality:
+
+```typescript capacitor.config.ts
+import type { CapacitorConfig } from '@capacitor/cli';
+
+const config: CapacitorConfig = {
+  appId: 'io.ionic.starter',
+  appName: 'Restaurant',
+  webDir: 'www'
+};
+
+export default config;
+```
+
+### Building for iOS
+
+<Steps>
+  <Step title="Build Web Assets">
+    ```bash
+    npm run build
+    ```
+  </Step>
+  
+  <Step title="Add iOS Platform (First Time Only)">
+    ```bash
+    npx cap add ios
+    ```
+  </Step>
+  
+  <Step title="Sync Changes">
+    Copy web assets and sync native configuration:
+    
+    ```bash
+    npx cap sync ios
+    ```
+  </Step>
+  
+  <Step title="Open in Xcode">
+    ```bash
+    npx cap open ios
+    ```
+    
+    In Xcode:
+    1. Select your development team
+    2. Choose a target device or simulator
+    3. Click "Run" to build and install
+  </Step>
+</Steps>
+
+<Info>
+  You need macOS with Xcode installed to build for iOS. Xcode is free from the Mac App Store.
+</Info>
+
+### Building for Android
+
+<Steps>
+  <Step title="Build Web Assets">
+    ```bash
+    npm run build
+    ```
+  </Step>
+  
+  <Step title="Add Android Platform (First Time Only)">
+    ```bash
+    npx cap add android
+    ```
+  </Step>
+  
+  <Step title="Sync Changes">
+    Copy web assets and sync native configuration:
+    
+    ```bash
+    npx cap sync android
+    ```
+  </Step>
+  
+  <Step title="Open in Android Studio">
+    ```bash
+    npx cap open android
+    ```
+    
+    In Android Studio:
+    1. Wait for Gradle sync to complete
+    2. Select a device or emulator
+    3. Click "Run" to build and install
+  </Step>
+</Steps>
+
+### Creating Release Builds
+
+#### iOS Release Build
+
+<Steps>
+  <Step title="Build and Sync">
+    ```bash
+    npm run build
+    npx cap sync ios
+    npx cap open ios
+    ```
+  </Step>
+  
+  <Step title="Configure in Xcode">
+    1. Select "Any iOS Device" as the target
+    2. Go to Product > Archive
+    3. Once archived, click "Distribute App"
+    4. Choose your distribution method (App Store, Ad Hoc, etc.)
+  </Step>
+</Steps>
+
+#### Android Release Build
+
+<Steps>
+  <Step title="Build and Sync">
+    ```bash
+    npm run build
+    npx cap sync android
+    npx cap open android
+    ```
+  </Step>
+  
+  <Step title="Generate Signed APK/Bundle">
+    In Android Studio:
+    1. Go to Build > Generate Signed Bundle / APK
+    2. Select "Android App Bundle" (recommended) or "APK"
+    3. Create or select your keystore
+    4. Choose the "release" build variant
+  </Step>
+</Steps>
+
+## Environment Configuration
+
+The build system automatically replaces environment files:
+
+<CodeGroup>
+```typescript environment.ts
+// Development environment (default)
+export const environment = {
+  production: false
+};
+```
+
+```typescript environment.prod.ts
+// Production environment (used with --configuration production)
+export const environment = {
+  production: true
+};
+```
+</CodeGroup>
+
+In production builds, `environment.ts` is replaced with `environment.prod.ts`.
+
+## Advanced Build Options
+
+### Custom Output Path
+
+```bash
+ng build --output-path=dist/custom
+```
+
+### Base Href
+
+For deploying to a subdirectory:
+
+```bash
+ng build --base-href /restaurant/
+```
+
+### Source Maps
+
+Include source maps in production for debugging:
+
+```bash
+ng build --source-map
+```
+
+### Stats JSON
+
+Generate bundle statistics:
+
+```bash
+ng build --stats-json
+```
+
+Analyze with webpack-bundle-analyzer:
+
+```bash
+npx webpack-bundle-analyzer www/stats.json
+```
+
+## Optimization Tips
+
+<AccordionGroup>
+  <Accordion title="Reduce Bundle Size">
+    1. **Lazy load routes**: Use Angular's lazy loading for feature modules
+    2. **Tree-shake unused code**: Ensure imports are specific
+    3. **Optimize images**: Compress assets in `src/assets/`
+    4. **Analyze bundle**: Use `--stats-json` to identify large dependencies
+  </Accordion>
+  
+  <Accordion title="Improve Build Performance">
+    1. **Use incremental builds**: `ng build --watch` for development
+    2. **Increase Node memory**: `NODE_OPTIONS=--max_old_space_size=8192 npm run build`
+    3. **Disable source maps**: Faster production builds (not recommended for debugging)
+    4. **Use build cache**: The `.angular/cache` directory speeds up rebuilds
+  </Accordion>
+  
+  <Accordion title="TailwindCSS Optimization">
+    TailwindCSS is configured to purge unused styles in production:
+    
+    ```javascript tailwind.config.js
+    module.exports = {
+      content: ["./src/**/*.{html,ts}"],
+      theme: {
+        extend: {},
+      },
+      plugins: [],
+    };
+    ```
+    
+    Ensure all template files are included in the `content` array.
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Build Errors">
+    Clear build cache and retry:
+    
+    ```bash
+    rm -rf .angular www node_modules/.cache
+    npm run build
+    ```
+  </Accordion>
+  
+  <Accordion title="Capacitor Sync Fails">
+    Ensure web assets are built first:
+    
+    ```bash
+    npm run build
+    npx cap sync --force
+    ```
+  </Accordion>
+  
+  <Accordion title="Memory Issues">
+    Increase Node.js memory limit:
+    
+    ```bash
+    NODE_OPTIONS=--max_old_space_size=8192 npm run build
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Testing" icon="flask" href="/development/testing">
+    Run tests before deploying
+  </Card>
+  <Card title="Styling" icon="paintbrush" href="/styling/tailwind">
+    Customize the app's appearance
+  </Card>
+</CardGroup>

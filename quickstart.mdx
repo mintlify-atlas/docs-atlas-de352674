@@ -1,80 +1,208 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: 'Quickstart'
+description: 'Get your Sushi Restaurant App up and running in minutes'
 ---
 
-## Get started in three steps
+## Get Started in 5 Minutes
 
-Get your documentation site running locally and make your first customization.
+Follow this guide to set up and run the Sushi Restaurant App locally. You'll have a fully functional restaurant menu application running in no time.
 
-### Step 1: Set up your local environment
+<Steps>
+  <Step title="Clone the Repository">
+    First, clone the repository to your local machine:
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+    ```bash
+    git clone https://github.com/mauriciouniversidad77-commits/Sushi.git
+    cd Sushi
+    ```
+  </Step>
 
-### Step 2: Deploy your changes
+  <Step title="Install Dependencies">
+    Install all required dependencies using your preferred package manager:
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    <CodeGroup>
+      ```bash npm
+      npm install
+      ```
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+      ```bash yarn
+      yarn install
+      ```
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+      ```bash pnpm
+      pnpm install
+      ```
+    </CodeGroup>
 
-### Step 3: Go live
+    <Note>
+      The app uses Angular 20, Ionic 8, and Capacitor 8. All dependencies will be automatically installed.
+    </Note>
+  </Step>
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+  <Step title="Start the Development Server">
+    Launch the development server to run the app locally:
 
-## Next steps
+    ```bash
+    npm start
+    ```
 
-Now that you have your docs running, explore these key features:
+    The app will automatically open in your browser at `http://localhost:8100`. You'll see the restaurant menu with delicious seafood dishes.
+
+    <Note>
+      The `npm start` command runs `ng serve` from the Angular CLI, which includes hot-reload for a smooth development experience.
+    </Note>
+  </Step>
+
+  <Step title="Explore the Menu">
+    Once the app is running, you'll see "El Faro del Mar" restaurant menu with six featured dishes:
+
+    - **Ceviche de Pescado** - Fresh fish ceviche with lime and red onion
+    - **Cóctel de Camarón** - Shrimp cocktail with special ketchup sauce
+    - **Tacos de Pescado** - Battered fish tacos with chipotle dressing
+    - **Aguachile Verde** - Raw shrimp in lime juice with serrano chile
+    - **Filete al Mojo de Ajo** - Garlic butter fish fillet with rice
+    - **Pulpo Zarandeado** - Grilled octopus with special marinade
+
+    Click any dish to view its detailed ingredients and preparation notes.
+  </Step>
+</Steps>
+
+## Your First View
+
+Here's what happens when the app loads and displays the menu:
+
+```typescript src/app/home/home.page.ts
+import { Component, OnInit } from '@angular/core';
+import { RegistrosServiceTs } from './home.service';
+import { Registro } from './home.model';
+
+@Component({
+  selector: 'app-home',
+  templateUrl: './home.page.html',
+  styleUrls: ['./home.page.scss'],
+  standalone: false,
+})
+export class HomePage implements OnInit {
+  registros: Registro[] = [];
+
+  constructor(private registrosService: RegistrosServiceTs) {}
+
+  ngOnInit() {
+    this.registros = this.registrosService.getRegistros();
+  }
+}
+```
+
+The `HomePage` component fetches all menu items from the `RegistrosServiceTs` service when it initializes. Each item is a `Registro` object containing the dish name, photo, and ingredients.
+
+## Understanding the Menu Data
+
+The app uses a simple service to manage menu items. Here's how the data is structured:
+
+```typescript src/app/home/home.model.ts
+export interface Registro {
+  id: string;
+  nombre: string;
+  foto: string;
+  observaciones: string[];
+}
+```
+
+Each menu item includes:
+- `id` - Unique identifier for the dish
+- `nombre` - Dish name in Spanish
+- `foto` - URL to the dish photo
+- `observaciones` - Array of ingredients or preparation notes
+
+<CodeGroup>
+  ```typescript Sample Menu Item
+  {
+    id: '1',
+    nombre: 'Ceviche de Pescado',
+    foto: 'https://images.unsplash.com/photo-1535399831218...',
+    observaciones: [
+      'Pescado fresco',
+      'Limón',
+      'Cebolla morada',
+      'Chile serrano',
+    ],
+  }
+  ```
+
+  ```typescript Fetching Menu Items
+  // Get all menu items
+  const registros = this.registrosService.getRegistros();
+
+  // Get a specific dish by ID
+  const dish = this.registrosService.getRegistro('1');
+  ```
+</CodeGroup>
+
+## Next Steps
+
+Now that you have the app running, explore these features:
 
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Project Structure" icon="folder-tree" href="/architecture/project-structure">
+    Learn how the app is organized
+  </Card>
+  
+  <Card title="Components" icon="puzzle-piece" href="/components/home-page">
+    Dive into the HomePage component
+  </Card>
+  
+  <Card title="Services" icon="gear" href="/services/registros-service">
+    Understand the data service layer
+  </Card>
+  
+  <Card title="Styling" icon="paintbrush" href="/styling/tailwind">
+    Customize the app's appearance
+  </Card>
 </CardGroup>
 
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>
+## Available Commands
+
+Here are the key commands from `package.json` you'll use during development:
+
+| Command | Description |
+|---------|-------------|
+| `npm start` | Start the development server |
+| `npm run build` | Build the app for production |
+| `npm run watch` | Build with watch mode for development |
+| `npm test` | Run unit tests |
+| `npm run lint` | Lint the codebase |
+
+<Warning>
+  Make sure you have Node.js (v18 or higher) and npm installed before running these commands.
+</Warning>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Port 8100 is already in use">
+    If port 8100 is occupied, you can specify a different port:
+    ```bash
+    ng serve --port 8200
+    ```
+  </Accordion>
+
+  <Accordion title="Dependencies installation fails">
+    Try clearing the npm cache and reinstalling:
+    ```bash
+    npm cache clean --force
+    rm -rf node_modules package-lock.json
+    npm install
+    ```
+  </Accordion>
+
+  <Accordion title="Angular CLI not found">
+    Install the Angular CLI globally:
+    ```bash
+    npm install -g @angular/cli
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## What's Next?
+
+You're now ready to start exploring and customizing the Sushi Restaurant App. Check out the [Architecture Overview](/architecture/overview) to understand how everything works together, or jump straight into [Building](/development/building) to learn how to create a production-ready version.

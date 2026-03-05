@@ -1,0 +1,646 @@
+---
+title: 'Routing System'
+description: 'Understanding navigation, lazy loading, and route configuration in the Sushi Restaurant App'
+---
+
+## Overview
+
+The Sushi Restaurant App uses Angular Router with Ionic's routing enhancements to provide seamless navigation with lazy loading, route parameters, and preloading strategies.
+
+## Routing Architecture
+
+<Steps>
+  <Step title="Root Routing">
+    App-level routes defined in `app-routing.module.ts`
+  </Step>
+  <Step title="Feature Routing">
+    Feature-specific routes in `home-routing.module.ts`
+  </Step>
+  <Step title="Lazy Loading">
+    Modules loaded on-demand for optimal performance
+  </Step>
+  <Step title="Route Parameters">
+    Dynamic routes for detail views (`:registroId`)
+  </Step>
+</Steps>
+
+## Root Routing Module
+
+The application-level routing configuration:
+
+```typescript src/app/app-routing.module.ts
+import { NgModule } from '@angular/core';
+import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+
+const routes: Routes = [
+  {
+    path: 'home',
+    loadChildren: () =>
+      import('./home/home.module').then((m) => m.HomePageModule),
+  },
+  {
+    path: '',
+    redirectTo: 'home',
+    pathMatch: 'full',
+  },
+];
+
+@NgModule({
+  imports: [
+    RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules }),
+  ],
+  exports: [RouterModule],
+})
+export class AppRoutingModule {}
+```
+
+### Key Configuration
+
+<AccordionGroup>
+  <Accordion title="RouterModule.forRoot()" icon="gear">
+    The `forRoot()` method configures the router at the application root level.
+    
+    ```typescript
+    RouterModule.forRoot(routes, {
+      preloadingStrategy: PreloadAllModules
+    })
+    ```
+    
+    <Info>Use `forRoot()` only once in the root module. Feature modules use `forChild()`.</Info>
+  </Accordion>
+  
+  <Accordion title="PreloadAllModules Strategy" icon="bolt">
+    This strategy loads lazy modules in the background after the initial app load:
+    
+    **Benefits**:
+    - Faster initial load time
+    - Subsequent navigation is instant
+    - Better user experience
+    
+    **How it works**:
+    1. Initial route loads first
+    2. After app is stable, lazy modules load in background
+    3. Modules are cached for instant access
+    
+    <Check>The app loads the home page immediately, then preloads the detail page module</Check>
+  </Accordion>
+  
+  <Accordion title="Default Route Redirect" icon="arrow-right">
+    ```typescript
+    {
+      path: '',
+      redirectTo: 'home',
+      pathMatch: 'full',
+    }
+    ```
+    
+    - Empty path redirects to `/home`
+    - `pathMatch: 'full'` ensures exact match
+    - User navigating to `/` lands on `/home`
+  </Accordion>
+</AccordionGroup>
+
+## Lazy Loading Implementation
+
+### Dynamic Import Syntax
+
+Lazy loading uses dynamic `import()` statements:
+
+```typescript
+{
+  path: 'home',
+  loadChildren: () =>
+    import('./home/home.module').then((m) => m.HomePageModule),
+}
+```
+
+<Tabs>
+  <Tab title="How it Works">
+    1. **Bundle Splitting**: Angular creates separate JavaScript bundles for each lazy module
+    2. **On-Demand Loading**: Module is downloaded only when the route is accessed
+    3. **Caching**: Once loaded, the module remains in memory
+    4. **Code Splitting**: Reduces initial bundle size significantly
+  </Tab>
+  
+  <Tab title="Bundle Analysis">
+    After running `ng build`, you'll see multiple chunk files:
+    
+    ```
+    www/
+    ├── main.js                    # Main application bundle
+    ├── polyfills.js               # Browser polyfills
+    ├── runtime.js                 # Webpack runtime
+    └── src_app_home_home_module.js  # Lazy-loaded home module
+    ```
+    
+    <Check>Each lazy module gets its own bundle, loaded only when needed</Check>
+  </Tab>
+  
+  <Tab title="Benefits">
+    **Performance Improvements**:
+    - Faster initial page load (smaller main bundle)
+    - Better Time to Interactive (TTI)
+    - Reduced bandwidth usage
+    - Improved mobile experience
+    
+    **Developer Benefits**:
+    - Better code organization
+    - Easier to maintain and scale
+    - Clear module boundaries
+  </Tab>
+</Tabs>
+
+## Feature Routing: Home Module
+
+Feature-level routing configuration:
+
+```typescript src/app/home/home-routing.module.ts
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { HomePage } from './home.page';
+
+const routes: Routes = [
+  {
+    path: '',
+    component: HomePage,
+  },
+  {
+    path: ':registroId',
+    loadChildren: () =>
+      import('./detalle-registro/detalle-registro.module').then(
+        (m) => m.DetalleRegistroPageModule,
+      ),
+  },
+];
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule],
+})
+export class HomePageRoutingModule {}
+```
+
+### Route Configuration Breakdown
+
+<AccordionGroup>
+  <Accordion title="Empty Path Route" icon="house">
+    ```typescript
+    {
+      path: '',
+      component: HomePage,
+    }
+    ```
+    
+    - Renders `HomePage` at `/home`
+    - Empty path is relative to parent route (`home`)
+    - Eagerly loaded (component is in the same module)
+    
+    **Full URL**: `/home`
+  </Accordion>
+  
+  <Accordion title="Dynamic Route Parameter" icon="link">
+    ```typescript
+    {
+      path: ':registroId',
+      loadChildren: () =>
+        import('./detalle-registro/detalle-registro.module').then(
+          (m) => m.DetalleRegistroPageModule,
+        ),
+    }
+    ```
+    
+    - `:registroId` is a route parameter
+    - Matches any value: `/home/1`, `/home/2`, etc.
+    - Lazy loads detail page module
+    
+    **Example URLs**:
+    - `/home/1` → Shows detail for item with ID "1"
+    - `/home/2` → Shows detail for item with ID "2"
+    
+    <Info>The colon (`:`) prefix indicates a dynamic route parameter</Info>
+  </Accordion>
+  
+  <Accordion title="RouterModule.forChild()" icon="sitemap">
+    ```typescript
+    @NgModule({
+      imports: [RouterModule.forChild(routes)],
+      exports: [RouterModule],
+    })
+    ```
+    
+    - Used in feature modules
+    - Registers routes as children of parent routes
+    - Can be imported multiple times (unlike `forRoot()`)
+    
+    <Warning>Never use `forRoot()` in feature modules—it will create multiple router instances</Warning>
+  </Accordion>
+</AccordionGroup>
+
+## Route Parameters
+
+### Extracting Route Parameters
+
+Access dynamic route parameters in components:
+
+```typescript src/app/home/detalle-registro/detalle-registro.page.ts
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Registro } from '../home.model';
+import { RegistrosServiceTs } from '../home.service';
+
+@Component({
+  standalone: false,
+  selector: 'app-detalle-registro',
+  templateUrl: './detalle-registro.page.html',
+  styleUrls: ['./detalle-registro.page.scss'],
+})
+export class DetalleRegistroPage implements OnInit {
+  registro: any = [];
+
+  constructor(
+    private activateRoute: ActivatedRoute,
+    private registrosService: RegistrosServiceTs,
+    private router: Router,
+  ) {}
+
+  ngOnInit() {
+    // Subscribe to route parameter changes
+    this.activateRoute.paramMap.subscribe((paramMap) => {
+      let recipeId: string = String(paramMap.get('registroId'));
+      this.registro = this.registrosService.getRegistro(recipeId);
+      console.log(this.registro);
+    });
+  }
+}
+```
+
+### Parameter Extraction Methods
+
+<Tabs>
+  <Tab title="Observable (Recommended)">
+    ```typescript
+    this.activateRoute.paramMap.subscribe((paramMap) => {
+      const id = paramMap.get('registroId');
+      // Load data based on ID
+    });
+    ```
+    
+    **Benefits**:
+    - Reacts to parameter changes automatically
+    - Required if navigating within the same component
+    - Follows reactive programming patterns
+    
+    <Check>Use this approach for dynamic updates when route parameters change</Check>
+  </Tab>
+  
+  <Tab title="Snapshot (One-time)">
+    ```typescript
+    ngOnInit() {
+      const id = this.activateRoute.snapshot.paramMap.get('registroId');
+      // Load data based on ID
+    }
+    ```
+    
+    **Benefits**:
+    - Simpler syntax for one-time reads
+    - No subscription management needed
+    - Sufficient if component is destroyed on navigation
+    
+    <Info>Use snapshot when you know the component will be destroyed on route changes</Info>
+  </Tab>
+  
+  <Tab title="Comparison">
+    | Feature | Observable | Snapshot |
+    |---------|-----------|----------|
+    | Reactive updates | ✅ Yes | ❌ No |
+    | Simpler syntax | ❌ No | ✅ Yes |
+    | Memory management | Manual unsubscribe | None needed |
+    | Use case | Dynamic parameters | One-time read |
+    
+    <Warning>Always unsubscribe from paramMap observable to prevent memory leaks (or use `async` pipe in template)</Warning>
+  </Tab>
+</Tabs>
+
+## Programmatic Navigation
+
+### Using Router Service
+
+Navigate programmatically from TypeScript code:
+
+```typescript
+import { Router } from '@angular/router';
+
+export class DetalleRegistroPage {
+  constructor(private router: Router) {}
+
+  async deleteRegistro() {
+    // ... delete logic
+    
+    // Navigate back to home
+    this.router.navigate(['/home']);
+  }
+}
+```
+
+### Navigation Methods
+
+<CodeGroup>
+```typescript Absolute Path
+// Navigate to absolute route
+this.router.navigate(['/home']);
+this.router.navigate(['/home', '1']);  // /home/1
+```
+
+```typescript Relative Path
+// Navigate relative to current route
+this.router.navigate(['../'], { relativeTo: this.activatedRoute });
+this.router.navigate(['detail', id], { relativeTo: this.activatedRoute });
+```
+
+```typescript With Query Parameters
+// Add query parameters: /home?sort=name&order=asc
+this.router.navigate(['/home'], {
+  queryParams: { sort: 'name', order: 'asc' }
+});
+```
+
+```typescript With State
+// Pass state (not visible in URL)
+this.router.navigate(['/home'], {
+  state: { data: someData }
+});
+
+// Access in target component
+const state = this.router.getCurrentNavigation()?.extras.state;
+```
+</CodeGroup>
+
+### Template Navigation
+
+Navigate using `routerLink` directive in templates:
+
+```html
+<!-- Absolute path -->
+<ion-button [routerLink]="['/home']">Home</ion-button>
+
+<!-- With parameter -->
+<ion-button [routerLink]="['/home', registro.id]">View Details</ion-button>
+
+<!-- String syntax -->
+<ion-button routerLink="/home">Home</ion-button>
+
+<!-- With active class -->
+<ion-button 
+  [routerLink]="['/home']" 
+  routerLinkActive="active-link">
+  Home
+</ion-button>
+```
+
+<Check>`routerLink` is preferred over `(click)` handlers for navigation—it's more semantic and handles accessibility better</Check>
+
+## Ionic Router Integration
+
+### IonicRouteStrategy
+
+Ionic provides a custom route reuse strategy:
+
+```typescript src/app/app.module.ts
+import { RouteReuseStrategy } from '@angular/router';
+import { IonicRouteStrategy } from '@ionic/angular';
+
+@NgModule({
+  providers: [
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
+  ],
+})
+export class AppModule {}
+```
+
+<AccordionGroup>
+  <Accordion title="What is IonicRouteStrategy?">
+    Ionic's custom strategy for managing route lifecycle:
+    
+    **Features**:
+    - Preserves component state during navigation
+    - Optimizes mobile navigation animations
+    - Handles back button behavior
+    - Manages component caching
+    
+    <Info>Without `IonicRouteStrategy`, Angular's default strategy would destroy components on every navigation</Info>
+  </Accordion>
+  
+  <Accordion title="Component Lifecycle Benefits">
+    **Example Scenario**:
+    1. User views list on home page
+    2. User scrolls to item #10
+    3. User taps item to view details
+    4. User navigates back
+    5. ✅ List is still scrolled to item #10 (state preserved)
+    
+    <Check>Provides native-like behavior where back navigation restores previous state</Check>
+  </Accordion>
+</AccordionGroup>
+
+### ion-router-outlet
+
+Ionic's enhanced router outlet:
+
+```html src/app/app.component.html
+<ion-app>
+  <ion-router-outlet></ion-router-outlet>
+</ion-app>
+```
+
+**Features**:
+- Animated page transitions
+- Gesture-based navigation (swipe back)
+- Stack-based navigation (maintains navigation history)
+- Platform-specific animations (iOS vs Android)
+
+<Note>
+`ion-router-outlet` extends Angular's `router-outlet` with mobile-specific enhancements
+</Note>
+
+## Navigation Flow Diagram
+
+```mermaid
+graph TD
+    A[App Loads] --> B[/ route]
+    B --> C[Redirects to /home]
+    C --> D[Lazy loads HomePageModule]
+    D --> E[Renders HomePage]
+    E --> F{User taps item}
+    F --> G[/home/:registroId]
+    G --> H[Lazy loads DetalleRegistroPageModule]
+    H --> I[Extracts registroId parameter]
+    I --> J[Loads data from service]
+    J --> K[Renders DetalleRegistroPage]
+    K --> L{User deletes item}
+    L --> M[Navigate to /home]
+    M --> E
+```
+
+## Route Guards
+
+While not implemented in the current app, route guards can protect routes:
+
+<CodeGroup>
+```typescript CanActivate Guard
+import { Injectable } from '@angular/core';
+import { CanActivate, Router } from '@angular/router';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthGuard implements CanActivate {
+  constructor(private router: Router) {}
+
+  canActivate(): boolean {
+    const isAuthenticated = // ... check auth status
+    
+    if (!isAuthenticated) {
+      this.router.navigate(['/login']);
+      return false;
+    }
+    return true;
+  }
+}
+```
+
+```typescript Using Guard
+const routes: Routes = [
+  {
+    path: 'home',
+    loadChildren: () => import('./home/home.module').then(m => m.HomePageModule),
+    canActivate: [AuthGuard]  // Protect route
+  }
+];
+```
+</CodeGroup>
+
+### Available Guard Types
+
+<CardGroup cols={2}>
+  <Card title="CanActivate" icon="shield-check">
+    Determines if a route can be activated
+  </Card>
+  <Card title="CanDeactivate" icon="shield-xmark">
+    Determines if user can leave a route (unsaved changes)
+  </Card>
+  <Card title="CanLoad" icon="download">
+    Prevents lazy loading of modules
+  </Card>
+  <Card title="Resolve" icon="spinner">
+    Pre-fetches data before activating route
+  </Card>
+</CardGroup>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use Lazy Loading for All Features">
+    ```typescript
+    // ✅ Good - Lazy loaded
+    {
+      path: 'feature',
+      loadChildren: () => import('./feature/feature.module').then(m => m.FeatureModule)
+    }
+    
+    // ❌ Bad - Eagerly loaded
+    {
+      path: 'feature',
+      component: FeatureComponent
+    }
+    ```
+    
+    Lazy loading reduces initial bundle size and improves performance.
+  </Accordion>
+  
+  <Accordion title="Always Use PreloadAllModules in Production">
+    ```typescript
+    RouterModule.forRoot(routes, {
+      preloadingStrategy: PreloadAllModules  // ✅ Enables preloading
+    })
+    ```
+    
+    Provides the best balance between initial load time and navigation speed.
+  </Accordion>
+  
+  <Accordion title="Extract Route Parameters with paramMap">
+    ```typescript
+    // ✅ Good - Observable paramMap
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+    });
+    
+    // ⚠️ Acceptable - Snapshot (if component is destroyed on navigation)
+    const id = this.route.snapshot.paramMap.get('id');
+    
+    // ❌ Bad - Direct params access
+    const id = this.route.snapshot.params['id'];
+    ```
+  </Accordion>
+  
+  <Accordion title="Use Absolute Paths for Primary Navigation">
+    ```typescript
+    // ✅ Good - Absolute path (clear and predictable)
+    this.router.navigate(['/home']);
+    
+    // ⚠️ Use with caution - Relative path (depends on current location)
+    this.router.navigate(['../home'], { relativeTo: this.route });
+    ```
+  </Accordion>
+  
+  <Accordion title="Prefer routerLink Over Click Handlers">
+    ```html
+    <!-- ✅ Good - Declarative, handles accessibility -->
+    <ion-button [routerLink]="['/home', item.id]">View</ion-button>
+    
+    <!-- ❌ Bad - Imperative, requires extra code -->
+    <ion-button (click)="navigate(item.id)">View</ion-button>
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Common Routing Patterns
+
+### Master-Detail Navigation
+
+The app implements the master-detail pattern:
+
+1. **Master** (`/home`): List of all menu items
+2. **Detail** (`/home/:id`): Detailed view of single item
+
+```typescript
+// Navigate from master to detail
+<ion-card [routerLink]="[registro.id]" *ngFor="let registro of registros">
+  <!-- Card content -->
+</ion-card>
+
+// Navigate from detail back to master
+this.router.navigate(['/home']);
+```
+
+### Nested Routes
+
+The routing structure demonstrates nesting:
+
+```
+/home                    → HomePage (list)
+/home/1                  → DetalleRegistroPage (detail for item 1)
+/home/2                  → DetalleRegistroPage (detail for item 2)
+```
+
+<Check>Child routes inherit the parent path, creating a hierarchical URL structure</Check>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Architecture Overview" icon="sitemap" href="/architecture/overview">
+    Learn about the application architecture patterns
+  </Card>
+  <Card title="Project Structure" icon="folder-tree" href="/architecture/project-structure">
+    Explore the directory layout and file organization
+  </Card>
+</CardGroup>

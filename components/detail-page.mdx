@@ -1,0 +1,453 @@
+---
+title: 'DetalleRegistroPage Component'
+description: 'Detail view component that displays dish information and allows deletion'
+icon: 'file-lines'
+---
+
+## Overview
+
+The `DetalleRegistroPage` component displays detailed information about a specific menu item (dish), including its image, name, and list of ingredients. It also provides functionality to delete the dish with a confirmation dialog.
+
+**Location**: `src/app/home/detalle-registro/detalle-registro.page.ts`
+
+## Component Class
+
+```typescript detalle-registro.page.ts
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Registro } from '../home.model';
+import { DetalleRegistroPageModule } from './detalle-registro.module';
+import { AlertController } from '@ionic/angular';
+import { RegistrosServiceTs } from '../home.service';
+
+@Component({
+  standalone: false,
+  selector: 'app-detalle-registro',
+  templateUrl: './detalle-registro.page.html',
+  styleUrls: ['./detalle-registro.page.scss'],
+})
+export class DetalleRegistroPage implements OnInit {
+  registro: any = [];
+
+  constructor(
+    private activateRoute: ActivatedRoute,
+    private registrosService: RegistrosServiceTs,
+    private router: Router,
+    private alertCtrl: AlertController,
+  ) {}
+
+  ngOnInit() {
+    this.activateRoute.paramMap.subscribe((paramMap) => {
+      let recipeId: string = String(paramMap.get('registroId'));
+      this.registro = this.registrosService.getRegistro(recipeId);
+      console.log(this.registro);
+    });
+  }
+
+  async deleteRegistro() {
+    const alertElement = await this.alertCtrl.create({
+      header: '¿Estas seguro de eliminar baboso?',
+      message: 'Se eliminara el registro',
+      buttons: [
+        { text: 'cancelar', role: 'cancel' },
+        {
+          text: 'eliminar',
+          handler: () => {
+            this.registrosService.deleteRegistro(this.registro.id);
+
+            this.router.navigate(['/home']);
+          },
+        },
+      ],
+    });
+
+    await alertElement.present();
+  }
+}
+```
+
+### Properties
+
+<ParamField path="registro" type="Registro | any" default="[]">
+  Stores the current dish data retrieved from the service based on the route parameter. Contains dish details including id, name, photo, and ingredients (observaciones).
+</ParamField>
+
+### Dependencies
+
+<ParamField path="activateRoute" type="ActivatedRoute">
+  Angular's ActivatedRoute service used to access route parameters. Subscribes to `paramMap` to get the `registroId` from the URL.
+</ParamField>
+
+<ParamField path="registrosService" type="RegistrosServiceTs">
+  Service that provides methods to fetch and delete menu items. Used to retrieve a specific dish by ID and to delete it.
+</ParamField>
+
+<ParamField path="router" type="Router">
+  Angular Router service used to navigate back to the home page after successfully deleting a dish.
+</ParamField>
+
+<ParamField path="alertCtrl" type="AlertController">
+  Ionic's AlertController used to create and present confirmation dialogs before destructive actions like deletion.
+</ParamField>
+
+## Lifecycle Hooks
+
+### ngOnInit()
+
+Initializes the component by subscribing to route parameters and fetching the corresponding dish data.
+
+```typescript
+ngOnInit() {
+  this.activateRoute.paramMap.subscribe((paramMap) => {
+    let recipeId: string = String(paramMap.get('registroId'));
+    this.registro = this.registrosService.getRegistro(recipeId);
+    console.log(this.registro);
+  });
+}
+```
+
+<Steps>
+  <Step title="Subscribe to Route Params">
+    Listens for changes in the route parameter map.
+  </Step>
+  <Step title="Extract Dish ID">
+    Gets the `registroId` parameter from the URL and converts it to a string.
+  </Step>
+  <Step title="Fetch Dish Data">
+    Calls the service method `getRegistro()` to retrieve the dish details.
+  </Step>
+  <Step title="Log Data">
+    Logs the retrieved registro to the console for debugging purposes.
+  </Step>
+</Steps>
+
+## Methods
+
+### deleteRegistro()
+
+Asynchronous method that presents a confirmation dialog before deleting a dish. If confirmed, it removes the dish and navigates back to the home page.
+
+```typescript
+async deleteRegistro() {
+  const alertElement = await this.alertCtrl.create({
+    header: '¿Estas seguro de eliminar baboso?',
+    message: 'Se eliminara el registro',
+    buttons: [
+      { text: 'cancelar', role: 'cancel' },
+      {
+        text: 'eliminar',
+        handler: () => {
+          this.registrosService.deleteRegistro(this.registro.id);
+          this.router.navigate(['/home']);
+        },
+      },
+    ],
+  });
+
+  await alertElement.present();
+}
+```
+
+<Accordion title="How the Alert Dialog Works">
+  <Steps>
+    <Step title="Create Alert">
+      Uses `AlertController.create()` to configure a confirmation dialog with a header, message, and two buttons.
+    </Step>
+    <Step title="Configure Buttons">
+      - **Cancel Button**: Role set to 'cancel', dismisses the alert without action
+      - **Delete Button**: Contains a handler function that executes the deletion
+    </Step>
+    <Step title="Execute Deletion">
+      If user confirms, calls `registrosService.deleteRegistro()` with the dish ID.
+    </Step>
+    <Step title="Navigate Away">
+      After deletion, navigates to `/home` to show the updated menu list.
+    </Step>
+    <Step title="Present Alert">
+      Displays the alert dialog to the user with `await alertElement.present()`.
+    </Step>
+  </Steps>
+</Accordion>
+
+<Warning>
+The deletion is immediate and permanent once confirmed. There is no undo functionality in the current implementation.
+</Warning>
+
+## Template
+
+The template creates an immersive detail view with a large hero image, ingredient list, and delete button.
+
+<CodeGroup>
+
+```html detalle-registro.page.html
+<ion-header class="ion-no-border" [translucent]="true">
+  <ion-toolbar class="bg-blue-900 text-white">
+    <ion-buttons slot="start">
+      <ion-back-button
+        defaultHref="/home"
+        class="text-white"
+        text=""
+      ></ion-back-button>
+    </ion-buttons>
+    <ion-title class="text-sm font-medium opacity-80">Volver al menú</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="bg-cyan-50">
+  <div *ngIf="registro" class="pb-10">
+    <!-- Hero Image Section -->
+    <div class="relative h-80 bg-blue-900">
+      <img
+        [src]="registro.foto"
+        class="w-full h-full object-cover opacity-90"
+        alt="Foto de {{registro.nombre}}"
+      />
+      <div
+        class="absolute inset-0 bg-gradient-to-t from-blue-900/80 to-transparent"
+      ></div>
+
+      <div class="absolute bottom-0 left-0 p-6 w-full">
+        <h1
+          class="text-4xl font-extrabold text-white tracking-tight drop-shadow-lg"
+        >
+          {{registro.nombre}}
+        </h1>
+        <div class="h-1.5 w-24 bg-teal-400 rounded-full mt-3 mb-6"></div>
+      </div>
+    </div>
+
+    <!-- Ingredients Section -->
+    <div class="relative z-10 px-4 -mt-8">
+      <div class="bg-white rounded-3xl p-6 shadow-xl border border-cyan-100/50">
+        <div class="flex items-center mb-6">
+          <div class="bg-teal-100 p-3 rounded-full mr-4">
+            <ion-icon
+              name="restaurant-outline"
+              class="text-2xl text-teal-600"
+            ></ion-icon>
+          </div>
+          <h2 class="text-2xl font-bold text-blue-900">Ingredientes Clave</h2>
+        </div>
+
+        <ion-list lines="none" class="bg-transparent px-0">
+          <ion-item
+            *ngFor="let observacion of registro.observaciones"
+            class="mb-3 rounded-2xl overflow-hidden shadow-sm border border-gray-100"
+          >
+            <ion-icon
+              slot="start"
+              name="checkmark-circle"
+              class="text-teal-500 text-xl ml-2"
+            ></ion-icon>
+            <ion-label class="py-4 font-medium text-gray-700 text-lg">
+              {{ observacion }}
+            </ion-label>
+          </ion-item>
+        </ion-list>
+
+        <!-- Delete Button -->
+        <button
+          (click)="deleteRegistro()"
+          class="w-full mt-4 bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-2xl shadow-md border-b-4 border-red-700 active:border-b-0 active:mt-5 transition-all flex justify-center items-center"
+        >
+          <ion-icon name="trash-outline" class="text-xl mr-2"></ion-icon>
+          Eliminar Platillo
+        </button>
+      </div>
+    </div>
+  </div>
+</ion-content>
+```
+
+</CodeGroup>
+
+### Template Features
+
+<CardGroup cols={2}>
+  <Card title="Hero Image" icon="image">
+    Full-width hero image with gradient overlay and dish name overlaid on the bottom.
+  </Card>
+  
+  <Card title="Back Navigation" icon="arrow-left">
+    Ionic back button in the header that returns to the home page with default href fallback.
+  </Card>
+  
+  <Card title="Ingredients List" icon="list-check">
+    Styled list using `*ngFor` to display all ingredients (observaciones) with checkmark icons.
+  </Card>
+  
+  <Card title="Delete Action" icon="trash">
+    Prominent red button that triggers the confirmation dialog before deletion.
+  </Card>
+</CardGroup>
+
+## Visual Layout
+
+<Tabs>
+  <Tab title="Layout Structure">
+    ```
+    ┌─────────────────────────────────────┐
+    │ ←  Volver al menú                   │  ← Header with Back Button
+    ├─────────────────────────────────────┤
+    │                                     │
+    │     [  Large Dish Image  ]          │  ← Hero Image (h-80)
+    │                                     │
+    │     Ceviche de Pescado              │  ← Dish Name (overlaid)
+    │     ▬▬▬                             │  ← Decorative Line
+    │                                     │
+    │  ┌─────────────────────────────┐   │
+    │  │ 🍴 Ingredientes Clave       │   │  ← Card Section
+    │  │                             │   │
+    │  │ ✓ Pescado fresco            │   │
+    │  │ ✓ Limón                     │   │
+    │  │ ✓ Cebolla morada            │   │
+    │  │ ✓ Chile serrano             │   │
+    │  │                             │   │
+    │  │ [🗑 Eliminar Platillo]      │   │  ← Delete Button
+    │  └─────────────────────────────┘   │
+    │                                     │
+    └─────────────────────────────────────┘
+    ```
+  </Tab>
+  
+  <Tab title="Component Flow">
+    ```
+    User clicks menu item on HomePage
+              ↓
+    Navigate to /home/:registroId
+              ↓
+    DetalleRegistroPage.ngOnInit()
+              ↓
+    Extract registroId from route
+              ↓
+    Fetch registro from service
+              ↓
+    Display dish details
+              ↓
+    User clicks "Eliminar Platillo"
+              ↓
+    Show confirmation alert
+              ↓
+    If confirmed → Delete & navigate home
+    If canceled → Dismiss alert
+    ```
+  </Tab>
+</Tabs>
+
+## AlertController Dialog
+
+The confirmation dialog uses Ionic's `AlertController` with Spanish text:
+
+<ParamField path="header" type="string">
+  "¿Estas seguro de eliminar baboso?" - Confirmation question asking if user is sure about deletion.
+</ParamField>
+
+<ParamField path="message" type="string">
+  "Se eliminara el registro" - Message explaining that the record will be deleted.
+</ParamField>
+
+<ParamField path="buttons" type="AlertButton[]">
+  Array of two buttons:
+  - **cancelar**: Dismisses the alert without action (role: 'cancel')
+  - **eliminar**: Executes the deletion handler and navigates to home
+</ParamField>
+
+<CodeGroup>
+
+```typescript Alert Configuration
+const alertElement = await this.alertCtrl.create({
+  header: '¿Estas seguro de eliminar baboso?',
+  message: 'Se eliminara el registro',
+  buttons: [
+    { text: 'cancelar', role: 'cancel' },
+    {
+      text: 'eliminar',
+      handler: () => {
+        this.registrosService.deleteRegistro(this.registro.id);
+        this.router.navigate(['/home']);
+      },
+    },
+  ],
+});
+```
+
+```typescript Service Delete Method
+deleteRegistro(registroId: string) {
+  this.registros = this.registros.filter(
+    (registro) => registro.id !== registroId,
+  );
+}
+```
+
+</CodeGroup>
+
+## Styling
+
+The component uses extensive Tailwind CSS classes for a modern, card-based design:
+
+- **Hero Section**: Full-width image with gradient overlay and absolute positioning for the title
+- **Card Elevation**: Negative margin (`-mt-8`) creates an overlapping card effect
+- **Color Palette**: Matches the app theme with blue-900, teal accents, and cyan backgrounds
+- **Button Styling**: 3D effect with border-bottom and active states for tactile feedback
+- **Responsive Layout**: Uses flexbox and padding for proper spacing
+
+<Note>
+The detail page SCSS file is empty, as all styling is handled through Tailwind utility classes in the template.
+</Note>
+
+## Route Configuration
+
+The detail page is accessed through a parameterized route:
+
+```typescript
+// In detalle-registro-routing.module.ts
+{
+  path: '',
+  component: DetalleRegistroPage
+}
+
+// Parent route in home-routing.module.ts
+{
+  path: ':registroId',
+  loadChildren: () => import('./detalle-registro/detalle-registro.module')
+    .then(m => m.DetalleRegistroPageModule)
+}
+```
+
+This creates routes like `/home/1`, `/home/2`, etc., where the number is the `registroId`.
+
+## Data Flow
+
+<Steps>
+  <Step title="Route Parameter">
+    User navigates to `/home/:registroId` (e.g., `/home/3`)
+  </Step>
+  <Step title="Extract ID">
+    Component extracts the `registroId` from route parameters
+  </Step>
+  <Step title="Fetch Data">
+    Service method `getRegistro(registroId)` returns a copy of the matching dish
+  </Step>
+  <Step title="Render Template">
+    Template displays the dish image, name, and ingredients list
+  </Step>
+  <Step title="User Action">
+    User can delete the dish or navigate back to home
+  </Step>
+</Steps>
+
+## Integration with HomePage
+
+The detail page is accessed from the [HomePage Component](/components/home-page) when a user taps a menu item:
+
+```html
+<!-- In home.page.html -->
+<ion-item
+  *ngFor="let registro of registros"
+  [routerLink]="['/home', registro.id]"
+>
+  <!-- Menu item content -->
+</ion-item>
+```
+
+This creates a seamless navigation experience between the list and detail views.

@@ -1,0 +1,547 @@
+---
+title: 'Project Structure'
+description: 'Detailed breakdown of the Sushi Restaurant App directory layout and file organization'
+---
+
+## Overview
+
+The Sushi Restaurant App follows Angular and Ionic conventions for project structure, with clear separation between source code, configuration, and build outputs.
+
+## Root Directory Structure
+
+```
+Restaurant/
+├── src/                    # Source code
+├── node_modules/           # Dependencies
+├── www/                    # Build output (generated)
+├── ios/                    # iOS native project (generated)
+├── android/                # Android native project (generated)
+├── angular.json            # Angular CLI configuration
+├── capacitor.config.ts     # Capacitor configuration
+├── ionic.config.json       # Ionic CLI configuration
+├── package.json            # Project dependencies
+├── tsconfig.json           # TypeScript configuration
+└── tailwind.config.js      # Tailwind CSS configuration
+```
+
+<Note>
+The `www/`, `ios/`, and `android/` directories are generated during the build process and should not be edited manually.
+</Note>
+
+## Source Directory (`src/`)
+
+The `src/` directory contains all application source code:
+
+```
+src/
+├── app/                    # Application code
+│   ├── home/              # Home feature module
+│   ├── app-routing.module.ts
+│   ├── app.component.ts
+│   └── app.module.ts
+├── assets/                 # Static assets
+│   └── icon/              # App icons
+├── environments/           # Environment configurations
+│   ├── environment.ts
+│   └── environment.prod.ts
+├── theme/                  # Global styles
+│   └── variables.scss
+├── global.scss             # Global stylesheet
+├── index.html              # HTML entry point
+├── main.ts                 # Application entry point
+├── polyfills.ts            # Browser polyfills
+└── test.ts                 # Test configuration
+```
+
+## Application Directory (`src/app/`)
+
+### Core Files
+
+<AccordionGroup>
+  <Accordion title="app.module.ts" icon="cube">
+    **Purpose**: Root module that bootstraps the application
+    
+    **Location**: `src/app/app.module.ts`
+    
+    ```typescript
+    import { NgModule } from '@angular/core';
+    import { BrowserModule } from '@angular/platform-browser';
+    import { RouteReuseStrategy } from '@angular/router';
+    import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
+    
+    @NgModule({
+      declarations: [AppComponent],
+      imports: [
+        BrowserModule,
+        IonicModule.forRoot(),
+        AppRoutingModule
+      ],
+      providers: [
+        { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
+      ],
+      bootstrap: [AppComponent]
+    })
+    export class AppModule {}
+    ```
+    
+    <Check>Configures Ionic, routing strategy, and application-wide providers</Check>
+  </Accordion>
+  
+  <Accordion title="app-routing.module.ts" icon="route">
+    **Purpose**: Defines application-level routes with lazy loading
+    
+    **Location**: `src/app/app-routing.module.ts`
+    
+    ```typescript
+    const routes: Routes = [
+      {
+        path: 'home',
+        loadChildren: () =>
+          import('./home/home.module').then((m) => m.HomePageModule),
+      },
+      {
+        path: '',
+        redirectTo: 'home',
+        pathMatch: 'full',
+      },
+    ];
+    
+    @NgModule({
+      imports: [
+        RouterModule.forRoot(routes, {
+          preloadingStrategy: PreloadAllModules
+        }),
+      ],
+      exports: [RouterModule],
+    })
+    export class AppRoutingModule {}
+    ```
+    
+    <Info>Uses `PreloadAllModules` strategy to load lazy modules in the background after initial load</Info>
+  </Accordion>
+  
+  <Accordion title="app.component.ts" icon="code">
+    **Purpose**: Root component that serves as the application shell
+    
+    **Location**: `src/app/app.component.ts`
+    
+    ```typescript
+    @Component({
+      selector: 'app-root',
+      templateUrl: 'app.component.html',
+      styleUrls: ['app.component.scss'],
+      standalone: false,
+    })
+    export class AppComponent {
+      constructor() {}
+    }
+    ```
+    
+    **Template** (`app.component.html`):
+    ```html
+    <ion-app>
+      <ion-router-outlet></ion-router-outlet>
+    </ion-app>
+    ```
+    
+    <Check>The `ion-router-outlet` renders routed components</Check>
+  </Accordion>
+</AccordionGroup>
+
+## Feature Module: Home
+
+The home feature follows a modular structure with all related files co-located:
+
+```
+src/app/home/
+├── detalle-registro/               # Detail page (child route)
+│   ├── detalle-registro-routing.module.ts
+│   ├── detalle-registro.module.ts
+│   ├── detalle-registro.page.html
+│   ├── detalle-registro.page.scss
+│   ├── detalle-registro.page.ts
+│   └── detalle-registro.page.spec.ts
+├── home-routing.module.ts          # Home feature routing
+├── home.module.ts                  # Home feature module
+├── home.page.html                  # Home template
+├── home.page.scss                  # Home styles
+├── home.page.ts                    # Home component
+├── home.page.spec.ts               # Home tests
+├── home.service.ts                 # Business logic
+└── home.model.ts                   # Data models
+```
+
+### File Responsibilities
+
+<Tabs>
+  <Tab title="Component">
+    **home.page.ts** - Presentation logic
+    
+    ```typescript
+    @Component({
+      selector: 'app-home',
+      templateUrl: './home.page.html',
+      styleUrls: ['./home.page.scss'],
+      standalone: false,
+    })
+    export class HomePage implements OnInit {
+      registros: Registro[] = [];
+    
+      constructor(private registrosService: RegistrosServiceTs) {}
+    
+      ngOnInit() {
+        this.registros = this.registrosService.getRegistros();
+      }
+    }
+    ```
+    
+    **Key Points**:
+    - Implements `OnInit` for initialization logic
+    - Injects the `RegistrosServiceTs` service
+    - Declares typed array for menu items
+  </Tab>
+  
+  <Tab title="Service">
+    **home.service.ts** - Business logic and data management
+    
+    ```typescript
+    @Injectable({
+      providedIn: 'root',
+    })
+    export class RegistrosServiceTs {
+      private registros: Registro[] = [
+        {
+          id: '1',
+          nombre: 'Ceviche de Pescado',
+          foto: 'https://images.unsplash.com/...',
+          observaciones: ['Pescado fresco', 'Limón', 'Cebolla morada']
+        },
+        // ... more items
+      ];
+    
+      getRegistros() {
+        return [...this.registros];
+      }
+    
+      getRegistro(registroId: string) {
+        return {
+          ...this.registros.find((registro) => registro.id === registroId),
+        };
+      }
+    
+      deleteRegistro(registroId: string) {
+        this.registros = this.registros.filter(
+          (registro) => registro.id !== registroId,
+        );
+      }
+    }
+    ```
+    
+    **Key Points**:
+    - Singleton service (`providedIn: 'root'`)
+    - Manages in-memory data store
+    - Returns copies to prevent direct mutations
+  </Tab>
+  
+  <Tab title="Model">
+    **home.model.ts** - Type definitions
+    
+    ```typescript
+    export interface Registro {
+      id: string;
+      nombre: string;
+      foto: string;
+      observaciones: string[];
+    }
+    ```
+    
+    **Key Points**:
+    - Defines TypeScript interface for type safety
+    - Exported for use across the application
+    - Describes menu item structure
+  </Tab>
+  
+  <Tab title="Module">
+    **home.module.ts** - Feature module configuration
+    
+    ```typescript
+    @NgModule({
+      imports: [
+        CommonModule,
+        FormsModule,
+        IonicModule,
+        HomePageRoutingModule
+      ],
+      declarations: [HomePage]
+    })
+    export class HomePageModule {}
+    ```
+    
+    **Key Points**:
+    - Declares the `HomePage` component
+    - Imports required Angular and Ionic modules
+    - Includes feature-specific routing
+  </Tab>
+  
+  <Tab title="Routing">
+    **home-routing.module.ts** - Feature routing
+    
+    ```typescript
+    const routes: Routes = [
+      {
+        path: '',
+        component: HomePage,
+      },
+      {
+        path: ':registroId',
+        loadChildren: () =>
+          import('./detalle-registro/detalle-registro.module').then(
+            (m) => m.DetalleRegistroPageModule,
+          ),
+      },
+    ];
+    
+    @NgModule({
+      imports: [RouterModule.forChild(routes)],
+      exports: [RouterModule],
+    })
+    export class HomePageRoutingModule {}
+    ```
+    
+    **Key Points**:
+    - Uses `forChild()` for feature routing
+    - Implements dynamic route parameter (`:registroId`)
+    - Lazy loads detail page
+  </Tab>
+</Tabs>
+
+## Detail Page Structure
+
+The detail page demonstrates nested routing:
+
+<CodeGroup>
+```typescript detalle-registro.page.ts
+@Component({
+  standalone: false,
+  selector: 'app-detalle-registro',
+  templateUrl: './detalle-registro.page.html',
+  styleUrls: ['./detalle-registro.page.scss'],
+})
+export class DetalleRegistroPage implements OnInit {
+  registro: any = [];
+
+  constructor(
+    private activateRoute: ActivatedRoute,
+    private registrosService: RegistrosServiceTs,
+    private router: Router,
+    private alertCtrl: AlertController,
+  ) {}
+
+  ngOnInit() {
+    // Extract route parameter
+    this.activateRoute.paramMap.subscribe((paramMap) => {
+      let recipeId: string = String(paramMap.get('registroId'));
+      this.registro = this.registrosService.getRegistro(recipeId);
+    });
+  }
+
+  async deleteRegistro() {
+    const alertElement = await this.alertCtrl.create({
+      header: '¿Estas seguro de eliminar?',
+      message: 'Se eliminara el registro',
+      buttons: [
+        { text: 'cancelar', role: 'cancel' },
+        {
+          text: 'eliminar',
+          handler: () => {
+            this.registrosService.deleteRegistro(this.registro.id);
+            this.router.navigate(['/home']);
+          },
+        },
+      ],
+    });
+    await alertElement.present();
+  }
+}
+```
+</CodeGroup>
+
+<Check>Demonstrates route parameter extraction, service injection, and Ionic AlertController usage</Check>
+
+## Assets Directory
+
+Static assets are stored in `src/assets/`:
+
+```
+src/assets/
+└── icon/
+    ├── favicon.png
+    └── ...
+```
+
+<Info>
+Assets are copied to the build output directory (`www/assets/`) and can be referenced using relative paths: `/assets/icon/favicon.png`
+</Info>
+
+## Environment Configuration
+
+Environment-specific settings:
+
+<CodeGroup>
+```typescript environment.ts
+export const environment = {
+  production: false
+};
+```
+
+```typescript environment.prod.ts
+export const environment = {
+  production: true
+};
+```
+</CodeGroup>
+
+<Note>
+Angular's build system automatically swaps `environment.ts` with `environment.prod.ts` during production builds (configured in `angular.json`).
+</Note>
+
+## Configuration Files
+
+### Angular Configuration
+
+**angular.json** - Defines build configuration:
+
+```json
+{
+  "projects": {
+    "app": {
+      "architect": {
+        "build": {
+          "options": {
+            "outputPath": "www",
+            "index": "src/index.html",
+            "main": "src/main.ts",
+            "polyfills": "src/polyfills.ts",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "src/assets",
+                "output": "assets"
+              }
+            ],
+            "styles": [
+              "src/global.scss",
+              "src/theme/variables.scss"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### Capacitor Configuration
+
+**capacitor.config.ts** - Native platform settings:
+
+```typescript
+const config: CapacitorConfig = {
+  appId: 'io.ionic.starter',
+  appName: 'Restaurant',
+  webDir: 'www'
+};
+```
+
+### Ionic Configuration
+
+**ionic.config.json** - Ionic CLI settings:
+
+```json
+{
+  "name": "Restaurant",
+  "integrations": {},
+  "type": "angular"
+}
+```
+
+## File Naming Conventions
+
+<CardGroup cols={2}>
+  <Card title="Components" icon="cube">
+    `*.page.ts` for page components
+    
+    `*.component.ts` for reusable components
+  </Card>
+  
+  <Card title="Services" icon="gears">
+    `*.service.ts` for injectable services
+  </Card>
+  
+  <Card title="Models" icon="shapes">
+    `*.model.ts` for TypeScript interfaces
+  </Card>
+  
+  <Card title="Modules" icon="cubes">
+    `*.module.ts` for NgModules
+    
+    `*-routing.module.ts` for routing modules
+  </Card>
+  
+  <Card title="Tests" icon="vial">
+    `*.spec.ts` for unit tests
+  </Card>
+  
+  <Card title="Templates" icon="code">
+    `*.html` for component templates
+  </Card>
+  
+  <Card title="Styles" icon="palette">
+    `*.scss` for component styles
+    
+    `.scss` for global styles
+  </Card>
+  
+  <Card title="Configuration" icon="sliders">
+    `*.config.ts` or `*.json` for configuration files
+  </Card>
+</CardGroup>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Feature Module Organization">
+    - Keep related files together in feature directories
+    - Use lazy loading for feature modules to reduce initial bundle size
+    - Follow the "one component per file" convention
+  </Accordion>
+  
+  <Accordion title="Service Organization">
+    - Place shared services at the feature level or in a shared directory
+    - Use `providedIn: 'root'` for application-wide services
+    - Keep services focused on a single responsibility
+  </Accordion>
+  
+  <Accordion title="Asset Management">
+    - Store all static assets in `src/assets/`
+    - Organize assets by type (icons, images, fonts)
+    - Use optimized image formats and sizes
+  </Accordion>
+  
+  <Accordion title="Environment Configuration">
+    - Never commit sensitive data to environment files
+    - Use environment files for feature flags and API endpoints
+    - Keep development and production configurations in sync
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Architecture Overview" icon="sitemap" href="/architecture/overview">
+    Learn about the application architecture patterns
+  </Card>
+  <Card title="Routing System" icon="route" href="/architecture/routing">
+    Understand navigation and lazy loading
+  </Card>
+</CardGroup>

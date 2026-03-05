@@ -1,0 +1,255 @@
+---
+title: 'Running the Application'
+description: 'Start and run the Sushi Restaurant App in development mode'
+---
+
+## Quick Start
+
+The fastest way to run the application is using the start script:
+
+```bash
+npm start
+```
+
+This command runs `ng serve` and starts the Angular development server.
+
+## Development Server
+
+### Default Configuration
+
+When you run `npm start`, the application will:
+
+<CardGroup cols={2}>
+  <Card title="Local Server" icon="server">
+    Start at `http://localhost:4200`
+  </Card>
+  <Card title="Live Reload" icon="arrows-rotate">
+    Automatically reload on file changes
+  </Card>
+  <Card title="Development Build" icon="code">
+    Use development configuration with source maps
+  </Card>
+  <Card title="Fast Compilation" icon="bolt">
+    Optimized for quick rebuild times
+  </Card>
+</CardGroup>
+
+### Development Build Features
+
+The development configuration (`angular.json`) includes:
+
+- **Source Maps**: Enabled for easier debugging
+- **No Optimization**: Faster build times
+- **Vendor Chunk**: Separate vendor bundle for faster rebuilds
+- **Named Chunks**: Human-readable chunk names
+- **No Build Optimizer**: Skipped for speed
+
+## Running on Different Platforms
+
+### Web Browser (Default)
+
+<Steps>
+  <Step title="Start the Development Server">
+    ```bash
+    npm start
+    ```
+  </Step>
+  
+  <Step title="Open in Browser">
+    Navigate to `http://localhost:4200` in your web browser.
+    
+    The application will automatically reload if you change any source files.
+  </Step>
+</Steps>
+
+### iOS Simulator
+
+To run on iOS, you'll need Xcode installed on macOS.
+
+<Steps>
+  <Step title="Build the Web Assets">
+    ```bash
+    npm run build
+    ```
+  </Step>
+  
+  <Step title="Add iOS Platform">
+    ```bash
+    npx cap add ios
+    ```
+  </Step>
+  
+  <Step title="Sync and Open">
+    ```bash
+    npx cap sync ios
+    npx cap open ios
+    ```
+    
+    This opens Xcode where you can run the app in the iOS Simulator.
+  </Step>
+</Steps>
+
+### Android Emulator
+
+To run on Android, you'll need Android Studio installed.
+
+<Steps>
+  <Step title="Build the Web Assets">
+    ```bash
+    npm run build
+    ```
+  </Step>
+  
+  <Step title="Add Android Platform">
+    ```bash
+    npx cap add android
+    ```
+  </Step>
+  
+  <Step title="Sync and Open">
+    ```bash
+    npx cap sync android
+    npx cap open android
+    ```
+    
+    This opens Android Studio where you can run the app in an emulator or on a physical device.
+  </Step>
+</Steps>
+
+## Advanced Running Options
+
+### Watch Mode
+
+For continuous builds during development:
+
+```bash
+npm run watch
+```
+
+This runs `ng build --watch --configuration development` and rebuilds automatically on file changes.
+
+### Custom Port
+
+To run on a different port:
+
+```bash
+ng serve --port 4300
+```
+
+### Production Configuration
+
+To test with production configuration locally:
+
+```bash
+ng serve --configuration production
+```
+
+<Warning>
+  Production configuration includes optimizations that make builds slower. Use this only when you need to test production-specific behavior.
+</Warning>
+
+### Host Configuration
+
+To access the dev server from other devices on your network:
+
+```bash
+ng serve --host 0.0.0.0
+```
+
+Then access via `http://<your-ip>:4200` from other devices.
+
+## Live Reload with Capacitor
+
+For live reload during native development:
+
+<Steps>
+  <Step title="Start Dev Server">
+    ```bash
+    npm start
+    ```
+  </Step>
+  
+  <Step title="Update Capacitor Config">
+    Temporarily modify `capacitor.config.ts`:
+    
+    ```typescript capacitor.config.ts
+    import type { CapacitorConfig } from '@capacitor/cli';
+
+    const config: CapacitorConfig = {
+      appId: 'io.ionic.starter',
+      appName: 'Restaurant',
+      webDir: 'www',
+      server: {
+        url: 'http://localhost:4200',
+        cleartext: true
+      }
+    };
+
+    export default config;
+    ```
+  </Step>
+  
+  <Step title="Sync and Run">
+    ```bash
+    npx cap sync
+    npx cap run ios
+    # or
+    npx cap run android
+    ```
+  </Step>
+</Steps>
+
+<Warning>
+  Remember to remove the `server` configuration before building for production.
+</Warning>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Port Already in Use">
+    If port 4200 is already in use:
+    
+    ```bash
+    ng serve --port 4300
+    ```
+    
+    Or find and kill the process using port 4200:
+    
+    ```bash
+    # macOS/Linux
+    lsof -ti:4200 | xargs kill -9
+    
+    # Windows
+    netstat -ano | findstr :4200
+    taskkill /PID <PID> /F
+    ```
+  </Accordion>
+  
+  <Accordion title="Build Errors After npm install">
+    Clear the Angular cache and rebuild:
+    
+    ```bash
+    rm -rf .angular
+    npm start
+    ```
+  </Accordion>
+  
+  <Accordion title="Capacitor Sync Issues">
+    If native sync fails, try:
+    
+    ```bash
+    npx cap sync --deployment
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Building" icon="hammer" href="/development/building">
+    Learn how to create production builds
+  </Card>
+  <Card title="Testing" icon="flask" href="/development/testing">
+    Run tests to ensure code quality
+  </Card>
+</CardGroup>

@@ -1,0 +1,369 @@
+---
+title: 'Ionic Theming'
+description: 'Understanding the Ionic theming system and color customization in the Sushi Restaurant App'
+---
+
+## Overview
+
+The Sushi Restaurant App uses Ionic's theming system alongside Tailwind CSS. While Tailwind handles most utility-based styling, Ionic's theming system controls component-level styles and provides CSS variables for consistent design tokens.
+
+## Theme Structure
+
+### Variables File
+
+The `theme/variables.scss` file is where Ionic theme customization would typically occur:
+
+```scss theme/variables.scss
+// For information on how to create your own theme, please refer to:
+// https://ionicframework.com/docs/theming/
+```
+
+<Note>
+  This app uses a minimal Ionic theme configuration, relying primarily on Tailwind utilities for styling. The default Ionic color palette is used for base component styles.
+</Note>
+
+## Global Styles Integration
+
+The `global.scss` file shows how Ionic CSS and Tailwind are integrated:
+
+```scss global.scss
+/* Core CSS required for Ionic components to work properly */
+@import "@ionic/angular/css/core.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Basic CSS for apps built with Ionic */
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+/* Optional CSS utils that can be commented out */
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+```
+
+### Import Order
+
+1. **Ionic Core**: Required base styles for components
+2. **Tailwind Base/Components/Utilities**: Utility-first styling system
+3. **Ionic Utilities**: Optional helper classes for padding, alignment, etc.
+
+## Ionic Component Styling
+
+### Headers and Toolbars
+
+Ionic components are styled using a combination of Ionic attributes and Tailwind classes:
+
+<CodeGroup>
+```html Home Page Header
+<ion-header class="ion-no-border" [translucent]="true">
+  <ion-toolbar class="bg-blue-900 text-black shadow-md">
+    <ion-title class="text-center text-xl font-bold tracking-widest uppercase">
+      🌊 El Faro del Mar
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+```
+
+```html Detail Page Header
+<ion-header class="ion-no-border" [translucent]="true">
+  <ion-toolbar class="bg-blue-900 text-white">
+    <ion-buttons slot="start">
+      <ion-back-button
+        defaultHref="/home"
+        class="text-white"
+        text=""
+      ></ion-back-button>
+    </ion-buttons>
+    <ion-title class="text-sm font-medium opacity-80">Volver al menú</ion-title>
+  </ion-toolbar>
+</ion-header>
+```
+</CodeGroup>
+
+Key Ionic features:
+- **ion-no-border**: Removes default border from header
+- **[translucent]**: Enables transparency effects on iOS
+- **slot="start"**: Positions back button on the left
+- **defaultHref**: Sets fallback navigation for back button
+
+### Content Areas
+
+```html
+<ion-content [fullscreen]="true" class="bg-cyan-50">
+  <!-- App content -->
+</ion-content>
+```
+
+Attributes:
+- **[fullscreen]**: Extends content behind the header for smooth scrolling
+- **class**: Tailwind utilities override default Ionic background
+
+### Lists and Items
+
+<CodeGroup>
+```html List Container
+<ion-list class="bg-transparent" lines="none">
+  <!-- List items -->
+</ion-list>
+```
+
+```html List Item with Detail
+<ion-item
+  [routerLink]="['/home', registro.id]"
+  class="mb-4 bg-white rounded-2xl shadow-sm border border-cyan-100"
+  detail="true"
+  detail-icon="chevron-forward-outline"
+>
+  <ion-avatar slot="start" class="border-2 border-teal-400">
+    <ion-img [src]="registro.foto"></ion-img>
+  </ion-avatar>
+  
+  <ion-label class="ml-3 my-3">
+    <h2 class="text-lg font-bold text-blue-900">{{registro.nombre}}</h2>
+    <p class="text-sm text-cyan-600">Ver platillo...</p>
+  </ion-label>
+</ion-item>
+```
+
+```html Ingredient List Item
+<ion-item class="mb-3 rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+  <ion-icon
+    slot="start"
+    name="checkmark-circle"
+    class="text-teal-500 text-xl ml-2"
+  ></ion-icon>
+  <ion-label class="py-4 font-medium text-gray-700 text-lg">
+    {{ observacion }}
+  </ion-label>
+</ion-item>
+```
+</CodeGroup>
+
+Ionic attributes explained:
+- **lines="none"**: Removes default item dividers
+- **detail="true"**: Shows detail arrow/chevron
+- **detail-icon**: Customizes the detail icon
+- **slot="start"**: Positions avatar/icon before label
+
+### Images and Avatars
+
+```html Avatar with Border
+<ion-avatar class="border-2 border-teal-400 p-0.5 bg-white shadow-sm">
+  <ion-img
+    [src]="registro.foto"
+    class="rounded-full object-cover"
+  ></ion-img>
+</ion-avatar>
+```
+
+```html Hero Image
+<img
+  [src]="registro.foto"
+  class="w-full h-full object-cover opacity-90"
+  alt="Foto de {{registro.nombre}}"
+/>
+```
+
+<Tip>
+  Use `ion-img` for lazy-loaded images within Ionic components like `ion-avatar`. Use standard `<img>` tags when you need more control over styling with Tailwind classes.
+</Tip>
+
+### Icons
+
+Ionic icons are styled with Tailwind utilities:
+
+```html
+<!-- Icon in colored background -->
+<div class="bg-teal-100 p-3 rounded-full">
+  <ion-icon
+    name="restaurant-outline"
+    class="text-2xl text-teal-600"
+  ></ion-icon>
+</div>
+
+<!-- Icon in button -->
+<ion-icon name="trash-outline" class="text-xl mr-2"></ion-icon>
+
+<!-- Icon in list item -->
+<ion-icon
+  slot="start"
+  name="checkmark-circle"
+  class="text-teal-500 text-xl"
+></ion-icon>
+```
+
+Icon sizing with Tailwind:
+- `text-xl`: ~20px
+- `text-2xl`: ~24px
+- `text-3xl`: ~30px
+
+### Buttons
+
+While Ionic provides `ion-button`, this app uses native HTML buttons with Tailwind styling:
+
+```html
+<button
+  (click)="deleteRegistro()"
+  class="w-full mt-4 bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-2xl shadow-md border-b-4 border-red-700 active:border-b-0 active:mt-5 transition-all flex justify-center items-center"
+>
+  <ion-icon name="trash-outline" class="text-xl mr-2"></ion-icon>
+  Eliminar Platillo
+</button>
+```
+
+<Note>
+  Native buttons with Tailwind provide more styling flexibility than `ion-button`, but `ion-button` offers better platform-specific styling and ripple effects.
+</Note>
+
+## Customizing Ionic Colors
+
+To customize Ionic's color palette, you would add CSS variables to `variables.scss`:
+
+```scss Example Custom Colors
+:root {
+  /** Primary - Deep Ocean Blue **/
+  --ion-color-primary: #1e3a8a;
+  --ion-color-primary-rgb: 30, 58, 138;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #1a3279;
+  --ion-color-primary-tint: #354e96;
+
+  /** Secondary - Teal Accent **/
+  --ion-color-secondary: #2dd4bf;
+  --ion-color-secondary-rgb: 45, 212, 191;
+  --ion-color-secondary-contrast: #000000;
+  --ion-color-secondary-contrast-rgb: 0, 0, 0;
+  --ion-color-secondary-shade: #28bba8;
+  --ion-color-secondary-tint: #42d8c5;
+
+  /** Background **/
+  --ion-background-color: #ecfeff;
+  --ion-background-color-rgb: 236, 254, 255;
+}
+```
+
+These variables would then be used with Ionic's color attribute:
+
+```html
+<ion-toolbar color="primary">
+  <ion-title>El Faro del Mar</ion-title>
+</ion-toolbar>
+
+<ion-button color="secondary">Ver Menú</ion-button>
+```
+
+<Warning>
+  The current app doesn't use Ionic color attributes, opting instead for direct Tailwind classes. Adding CSS variables is only necessary if you want to use Ionic's `color` attribute system.
+</Warning>
+
+## Dark Mode
+
+Ionic includes dark mode support, but it's currently disabled in the app:
+
+```scss global.scss
+/* @import "@ionic/angular/css/palettes/dark.always.css"; */
+/* @import "@ionic/angular/css/palettes/dark.class.css"; */
+```
+
+To enable dark mode:
+
+<Steps>
+  <Step title="Choose a dark mode strategy">
+    - `dark.always.css`: Always use dark mode
+    - `dark.class.css`: Enable dark mode with a CSS class
+    - `dark.system.css`: Follow system preference
+  </Step>
+  
+  <Step title="Uncomment the import">
+    ```scss
+    @import "@ionic/angular/css/palettes/dark.class.css";
+    ```
+  </Step>
+  
+  <Step title="Add dark mode variants to Tailwind classes">
+    ```html
+    <ion-content class="bg-cyan-50 dark:bg-gray-900">
+      <h1 class="text-blue-900 dark:text-cyan-400">Title</h1>
+    </ion-content>
+    ```
+  </Step>
+</Steps>
+
+## Platform-Specific Styling
+
+Ionic automatically applies platform-specific styles. You can customize this behavior:
+
+```html
+<!-- iOS-specific styling -->
+<ion-header [translucent]="true">
+  <!-- Translucent headers work best on iOS -->
+</ion-header>
+
+<!-- Platform detection in TypeScript -->
+<ion-toolbar [class.md-toolbar]="platform.is('android')">
+  <!-- Custom Android styling -->
+</ion-toolbar>
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Use Ionic Utilities" icon="toolbox">
+    Leverage Ionic's built-in utilities like `ion-no-border`, `ion-text-center`, and slot attributes before writing custom CSS.
+  </Card>
+  
+  <Card title="Transparent Backgrounds" icon="eye-slash">
+    Set `class="bg-transparent"` on Ionic components when applying Tailwind backgrounds to parent containers.
+  </Card>
+  
+  <Card title="Component Attributes First" icon="list-check">
+    Use Ionic attributes (`lines`, `detail`, `slot`) for component behavior, Tailwind classes for visual styling.
+  </Card>
+  
+  <Card title="Respect Platform Conventions" icon="mobile">
+    Let Ionic handle platform-specific styling automatically rather than forcing a single design across platforms.
+  </Card>
+</CardGroup>
+
+## Ionic vs Tailwind Decision Guide
+
+| Use Ionic When | Use Tailwind When |
+|----------------|-------------------|
+| Need platform-specific behavior | Applying colors and spacing |
+| Using component slots/attributes | Creating custom layouts |
+| Implementing navigation patterns | Styling individual elements |
+| Need ripple effects | Need hover/focus states |
+| Using Ionic icons | Applying typography |
+
+## Component-Specific SCSS
+
+Page-specific styles can be added to component SCSS files:
+
+```scss home.page.scss (example)
+#container {
+  text-align: center;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+```
+
+<Tip>
+  In this app, most page-specific SCSS files are minimal or empty since Tailwind handles the styling directly in templates.
+</Tip>
+
+## Resources
+
+- [Ionic Theming Documentation](https://ionicframework.com/docs/theming/basics)
+- [Ionic CSS Utilities](https://ionicframework.com/docs/layout/css-utilities)
+- [Ionic Component Documentation](https://ionicframework.com/docs/components)
+- [Ionic Color Generator](https://ionicframework.com/docs/theming/color-generator)

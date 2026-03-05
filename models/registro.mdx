@@ -1,0 +1,281 @@
+---
+title: 'Registro'
+description: 'Core data model representing seafood dishes in the Sushi Restaurant App'
+icon: 'database'
+---
+
+## Overview
+
+The `Registro` interface is the primary data model in the application, representing individual seafood dishes with their details and ingredients. Each registro contains information about a dish including its name, photo, and a list of observations (ingredients or notes).
+
+<Note>
+The term "Registro" (Spanish for "record" or "entry") is used throughout the app to represent menu items or dishes.
+</Note>
+
+## Interface Definition
+
+The Registro interface is defined in `src/app/home/home.model.ts`:
+
+```typescript src/app/home/home.model.ts
+export interface Registro {
+  id: string;
+  nombre: string;
+  foto: string;
+  observaciones: string[];
+}
+```
+
+## Properties
+
+<ParamField path="id" type="string" required>
+  Unique identifier for the registro. Used for routing, deletion, and fetching specific records.
+  
+  **Example:** `"1"`, `"2"`, `"3"`
+</ParamField>
+
+<ParamField path="nombre" type="string" required>
+  Name of the seafood dish in Spanish.
+  
+  **Examples:** 
+  - `"Ceviche de Pescado"`
+  - `"Cóctel de Camarón"`
+  - `"Tacos de Pescado"`
+</ParamField>
+
+<ParamField path="foto" type="string" required>
+  URL to the dish's photo. Can be from external image services like Unsplash or Bing.
+  
+  **Example:** `"https://images.unsplash.com/photo-1535399831218-d5bd36d1a6b3?auto=format&fit=crop&w=500&q=60"`
+</ParamField>
+
+<ParamField path="observaciones" type="string[]" required>
+  Array of observations, typically listing ingredients or preparation notes for the dish.
+  
+  **Example:** `["Pescado fresco", "Limón", "Cebolla morada", "Chile serrano"]`
+</ParamField>
+
+## Example Data
+
+Here are real examples from the app's service layer (`src/app/home/home.service.ts`):
+
+<CodeGroup>
+
+```json Ceviche de Pescado
+{
+  "id": "1",
+  "nombre": "Ceviche de Pescado",
+  "foto": "https://images.unsplash.com/photo-1535399831218-d5bd36d1a6b3?auto=format&fit=crop&w=500&q=60",
+  "observaciones": [
+    "Pescado fresco",
+    "Limón",
+    "Cebolla morada",
+    "Chile serrano"
+  ]
+}
+```
+
+```json Cóctel de Camarón
+{
+  "id": "2",
+  "nombre": "Cóctel de Camarón",
+  "foto": "https://images.unsplash.com/photo-1559715745-e1b33a271c8f?auto=format&fit=crop&w=500&q=60",
+  "observaciones": [
+    "Camarón pacotilla",
+    "Salsa cátsup especial",
+    "Aguacate",
+    "Galletas saladas"
+  ]
+}
+```
+
+```json Aguachile Verde
+{
+  "id": "4",
+  "nombre": "Aguachile Verde",
+  "foto": "https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=500&q=60",
+  "observaciones": [
+    "Camarón crudo",
+    "Jugo de limón",
+    "Chile serrano",
+    "Pepino",
+    "Cebolla"
+  ]
+}
+```
+
+```json Pulpo Zarandeado
+{
+  "id": "6",
+  "nombre": "Pulpo Zarandeado",
+  "foto": "https://tse2.mm.bing.net/th/id/OIP.-Wv38sBv-5EvZ9_ux_fOjQHaE8?pid=Api&P=0&h=180",
+  "observaciones": [
+    "Tentáculos de pulpo",
+    "Adobo especial",
+    "A las brasas",
+    "Papas gajo"
+  ]
+}
+```
+
+</CodeGroup>
+
+## Usage in Components
+
+### HomePage Component
+
+The `Registro` interface is used in the HomePage component to display a list of all available dishes:
+
+```typescript src/app/home/home.page.ts
+export class HomePage implements OnInit {
+  registros: Registro[] = [];
+
+  constructor(private registrosService: RegistrosServiceTs) {}
+
+  ngOnInit() {
+    this.registros = this.registrosService.getRegistros();
+  }
+}
+```
+
+The component fetches all registros from the service on initialization and stores them for display in the template.
+
+### DetalleRegistroPage Component
+
+The detail page uses the `Registro` interface to display individual dish information:
+
+```typescript src/app/home/detalle-registro/detalle-registro.page.ts
+export class DetalleRegistroPage implements OnInit {
+  registro: any = [];
+
+  constructor(
+    private activateRoute: ActivatedRoute,
+    private registrosService: RegistrosServiceTs,
+    private router: Router,
+    private alertCtrl: AlertController
+  ) {}
+
+  ngOnInit() {
+    this.activateRoute.paramMap.subscribe((paramMap) => {
+      let recipeId: string = String(paramMap.get('registroId'));
+      this.registro = this.registrosService.getRegistro(recipeId);
+    });
+  }
+}
+```
+
+The detail page retrieves a specific registro based on the route parameter `registroId`.
+
+## Service Methods
+
+The `RegistrosServiceTs` provides several methods for working with Registro objects:
+
+<CodeGroup>
+
+```typescript Get All Registros
+getRegistros(): Registro[] {
+  return [...this.registros];
+}
+```
+
+```typescript Get Single Registro
+getRegistro(registroId: string): Registro {
+  return {
+    ...this.registros.find((registro) => registro.id === registroId),
+  };
+}
+```
+
+```typescript Delete Registro
+deleteRegistro(registroId: string): void {
+  this.registros = this.registros.filter(
+    (registro) => registro.id !== registroId
+  );
+}
+```
+
+</CodeGroup>
+
+## Type Safety
+
+Using TypeScript's interface ensures type safety throughout the application:
+
+```typescript
+// ✅ Valid - All required properties present
+const validRegistro: Registro = {
+  id: "7",
+  nombre: "Camarones al Ajillo",
+  foto: "https://example.com/photo.jpg",
+  observaciones: ["Camarones", "Ajo", "Aceite de oliva"]
+};
+
+// ❌ Invalid - Missing required property 'observaciones'
+const invalidRegistro: Registro = {
+  id: "8",
+  nombre: "Tostada de Atún",
+  foto: "https://example.com/photo.jpg"
+  // TypeScript will throw a compilation error
+};
+
+// ❌ Invalid - Wrong type for 'observaciones'
+const wrongType: Registro = {
+  id: "9",
+  nombre: "Pescado Zarandeado",
+  foto: "https://example.com/photo.jpg",
+  observaciones: "Pescado entero"  // Should be string[], not string
+};
+```
+
+## Common Patterns
+
+### Spreading for Immutability
+
+The service uses the spread operator to maintain immutability:
+
+```typescript
+// Returns a new array copy, not the original
+getRegistros() {
+  return [...this.registros];
+}
+
+// Returns a new object copy, not the original
+getRegistro(registroId: string) {
+  return {
+    ...this.registros.find((registro) => registro.id === registroId),
+  };
+}
+```
+
+This prevents components from accidentally mutating the service's internal state.
+
+### Filtering Arrays
+
+Deleting a registro creates a new filtered array:
+
+```typescript
+deleteRegistro(registroId: string) {
+  this.registros = this.registros.filter(
+    (registro) => registro.id !== registroId
+  );
+}
+```
+
+<Note>
+The `addRegistro()` method exists in the service but is not yet implemented.
+</Note>
+
+## Related Documentation
+
+<CardGroup cols={2}>
+  <Card title="RegistrosService" icon="gear" href="/services/registros-service">
+    Learn about service methods for managing registros
+  </Card>
+  <Card title="HomePage" icon="house" href="/components/home-page">
+    See how registros are displayed in the list view
+  </Card>
+  <Card title="DetalleRegistro" icon="circle-info" href="/components/detail-page">
+    Explore the detail view for individual registros
+  </Card>
+  <Card title="Architecture" icon="sitemap" href="/architecture/overview">
+    Understand how models fit into the app architecture
+  </Card>
+</CardGroup>

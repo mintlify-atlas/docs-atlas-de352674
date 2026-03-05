@@ -1,0 +1,144 @@
+---
+title: 'Development Setup'
+description: 'Set up your local development environment for the Sushi Restaurant App'
+---
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed on your system:
+
+<CardGroup cols={2}>
+  <Card title="Node.js" icon="node-js">
+    Version 18.x or higher recommended
+  </Card>
+  <Card title="npm" icon="npm">
+    Comes bundled with Node.js
+  </Card>
+</CardGroup>
+
+<Warning>
+  This project uses Angular 20 and Ionic 8, which require Node.js 18.x or higher.
+</Warning>
+
+## Installation Steps
+
+<Steps>
+  <Step title="Clone the Repository">
+    Clone the Sushi Restaurant App repository to your local machine:
+    
+    ```bash
+    git clone <repository-url>
+    cd Restaurant
+    ```
+  </Step>
+
+  <Step title="Install Dependencies">
+    Install all required npm packages:
+    
+    ```bash
+    npm install
+    ```
+    
+    This will install:
+    - Angular 20 framework
+    - Ionic 8 components and toolkit
+    - Capacitor 8 for native functionality
+    - Development tools (TypeScript, ESLint, Karma)
+    - TailwindCSS for styling
+  </Step>
+
+  <Step title="Verify Installation">
+    Check that the Angular CLI is available:
+    
+    ```bash
+    npm run ng -- version
+    ```
+    
+    You should see Angular CLI version 20.0.0 and related package versions.
+  </Step>
+</Steps>
+
+## Key Dependencies
+
+### Core Framework
+
+- **Angular**: v20.0.0 - Modern web application framework
+- **Ionic Angular**: v8.0.0 - Mobile UI components
+- **RxJS**: v7.8.0 - Reactive programming library
+
+### Native Capabilities
+
+- **Capacitor Core**: v8.1.0 - Native runtime
+- **Capacitor Plugins**: App, Haptics, Keyboard, Status Bar (v8.0.1)
+
+### Development Tools
+
+- **TypeScript**: v5.9.0 - Type-safe JavaScript
+- **Angular ESLint**: v20.0.0 - Code quality
+- **Karma & Jasmine**: Testing framework
+- **TailwindCSS**: v3.4.19 - Utility-first CSS
+
+## IDE Setup Recommendations
+
+### Visual Studio Code
+
+Recommended extensions for the best development experience:
+
+<CodeGroup>
+```json extensions.json
+{
+  "recommendations": [
+    "angular.ng-template",
+    "ms-vscode.vscode-typescript-next",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+    "ionic.ionic"
+  ]
+}
+```
+</CodeGroup>
+
+### TypeScript Configuration
+
+The project uses strict TypeScript settings for type safety:
+
+<AccordionGroup>
+  <Accordion title="View TypeScript Config Highlights">
+    - **Strict Mode**: Enabled for maximum type safety
+    - **Target**: ES2022 with ES2020 modules
+    - **Experimental Decorators**: Enabled for Angular
+    - **Strict Templates**: Enforced in Angular components
+  </Accordion>
+</AccordionGroup>
+
+## Project Structure
+
+After installation, your project structure will look like:
+
+```
+Restaurant/
+├── src/
+│   ├── app/              # Application components
+│   ├── assets/           # Static assets
+│   ├── theme/            # Ionic theming
+│   ├── environments/     # Environment configs
+│   └── global.scss       # Global styles
+├── www/                  # Build output directory
+├── angular.json          # Angular CLI configuration
+├── capacitor.config.ts   # Capacitor configuration
+├── tailwind.config.js    # TailwindCSS configuration
+├── karma.conf.js         # Test runner configuration
+└── package.json          # Project dependencies
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Running the App" icon="play" href="/development/running">
+    Learn how to start the development server
+  </Card>
+  <Card title="Building" icon="hammer" href="/development/building">
+    Create production builds for deployment
+  </Card>
+</CardGroup>

@@ -1,0 +1,314 @@
+---
+title: 'Architecture Overview'
+description: 'Understanding the Ionic Angular architecture and design patterns used in the Sushi Restaurant App'
+---
+
+## Introduction
+
+The Sushi Restaurant App is built on a modern, scalable architecture that combines **Ionic Framework**, **Angular**, and **Capacitor** to deliver a cross-platform mobile experience. This architecture enables code reuse across web, iOS, and Android platforms while maintaining native performance.
+
+## Technology Stack
+
+<CardGroup cols={3}>
+  <Card title="Ionic Framework" icon="mobile">
+    UI components and cross-platform tools (v8.0.0)
+  </Card>
+  <Card title="Angular" icon="angular">
+    Application framework and dependency injection (v20.0.0)
+  </Card>
+  <Card title="Capacitor" icon="cube">
+    Native runtime for mobile deployment (v8.1.0)
+  </Card>
+</CardGroup>
+
+## Architectural Patterns
+
+### Component-Service-Model Pattern
+
+The application follows Angular's best practices with a clear separation of concerns:
+
+<Steps>
+  <Step title="Components">
+    Handle presentation logic and user interactions
+  </Step>
+  <Step title="Services">
+    Manage business logic and data operations
+  </Step>
+  <Step title="Models">
+    Define type-safe data structures using TypeScript interfaces
+  </Step>
+</Steps>
+
+<Accordion title="Example: Home Feature Implementation">
+
+**Model** (`src/app/home/home.model.ts`)
+```typescript
+export interface Registro {
+  id: string;
+  nombre: string;
+  foto: string;
+  observaciones: string[];
+}
+```
+
+**Service** (`src/app/home/home.service.ts`)
+```typescript
+@Injectable({
+  providedIn: 'root',
+})
+export class RegistrosServiceTs {
+  private registros: Registro[] = [
+    {
+      id: '1',
+      nombre: 'Ceviche de Pescado',
+      foto: 'https://images.unsplash.com/...',
+      observaciones: ['Pescado fresco', 'Limón', 'Cebolla morada']
+    },
+    // ... more items
+  ];
+
+  getRegistros() {
+    return [...this.registros];
+  }
+
+  getRegistro(registroId: string) {
+    return {
+      ...this.registros.find((registro) => registro.id === registroId),
+    };
+  }
+}
+```
+
+**Component** (`src/app/home/home.page.ts`)
+```typescript
+@Component({
+  selector: 'app-home',
+  templateUrl: './home.page.html',
+  styleUrls: ['./home.page.scss'],
+  standalone: false,
+})
+export class HomePage implements OnInit {
+  registros: Registro[] = [];
+
+  constructor(private registrosService: RegistrosServiceTs) {}
+
+  ngOnInit() {
+    this.registros = this.registrosService.getRegistros();
+  }
+}
+```
+
+</Accordion>
+
+### Dependency Injection
+
+Angular's dependency injection system provides services throughout the application:
+
+```typescript src/app/home/home.service.ts
+@Injectable({
+  providedIn: 'root', // Service available application-wide
+})
+export class RegistrosServiceTs {
+  // Service implementation
+}
+```
+
+<Note>
+The `providedIn: 'root'` configuration creates a singleton service instance that's shared across the entire application, ensuring data consistency.
+</Note>
+
+## Ionic Framework Integration
+
+### IonicModule Configuration
+
+The application bootstraps Ionic through the root module:
+
+```typescript src/app/app.module.ts
+import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [
+    BrowserModule,
+    IonicModule.forRoot(), // Initializes Ionic components
+    AppRoutingModule
+  ],
+  providers: [
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
+  ],
+  bootstrap: [AppComponent],
+})
+export class AppModule {}
+```
+
+### Ionic Components
+
+The app leverages Ionic's pre-built UI components for a native look and feel:
+
+- **ion-header** / **ion-toolbar**: Navigation headers
+- **ion-content**: Scrollable content areas
+- **ion-card**: Display restaurant menu items
+- **ion-button**: Interactive buttons
+- **ion-alert**: Confirmation dialogs
+
+<Check>Ionic components automatically adapt to platform-specific design guidelines (Material Design for Android, Cupertino for iOS)</Check>
+
+## Capacitor: Mobile Runtime
+
+Capacitor bridges web code to native platforms, enabling deployment to iOS and Android.
+
+### Capacitor Configuration
+
+```typescript capacitor.config.ts
+import type { CapacitorConfig } from '@capacitor/cli';
+
+const config: CapacitorConfig = {
+  appId: 'io.ionic.starter',
+  appName: 'Restaurant',
+  webDir: 'www' // Output directory from Angular build
+};
+
+export default config;
+```
+
+### Native Plugins
+
+The application uses Capacitor plugins for native functionality:
+
+```json package.json
+{
+  "dependencies": {
+    "@capacitor/app": "8.0.1",
+    "@capacitor/haptics": "8.0.1",
+    "@capacitor/keyboard": "8.0.1",
+    "@capacitor/status-bar": "8.0.1"
+  }
+}
+```
+
+<CardGroup cols={2}>
+  <Card title="@capacitor/app" icon="mobile-screen">
+    App lifecycle and state management
+  </Card>
+  <Card title="@capacitor/haptics" icon="hand">
+    Tactile feedback for user interactions
+  </Card>
+  <Card title="@capacitor/keyboard" icon="keyboard">
+    Keyboard behavior and events
+  </Card>
+  <Card title="@capacitor/status-bar" icon="bars">
+    Status bar styling and control
+  </Card>
+</CardGroup>
+
+## Build and Deployment Flow
+
+<Steps>
+  <Step title="Development">
+    Run `ng serve` for web development with hot reload
+  </Step>
+  <Step title="Build">
+    Execute `ng build` to compile to `www/` directory
+  </Step>
+  <Step title="Sync">
+    Run `npx cap sync` to copy web assets to native projects
+  </Step>
+  <Step title="Native Build">
+    Use `npx cap open ios` or `npx cap open android` to build native apps
+  </Step>
+</Steps>
+
+<Warning>
+Always run `ng build` before `npx cap sync` to ensure native platforms have the latest web assets.
+</Warning>
+
+## Module Organization
+
+### Root Module (AppModule)
+
+The root module bootstraps the entire application:
+
+```typescript src/app/app.module.ts
+@NgModule({
+  declarations: [AppComponent],
+  imports: [
+    BrowserModule,           // Browser-specific services
+    IonicModule.forRoot(),   // Ionic initialization
+    AppRoutingModule         // Application routing
+  ],
+  providers: [
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
+  ],
+  bootstrap: [AppComponent]
+})
+export class AppModule {}
+```
+
+### Feature Modules
+
+Features are organized as lazy-loaded modules:
+
+```typescript src/app/home/home.module.ts
+@NgModule({
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    HomePageRoutingModule  // Feature-specific routing
+  ],
+  declarations: [HomePage]
+})
+export class HomePageModule {}
+```
+
+<Info>
+Feature modules encapsulate related components, services, and routing, promoting code organization and reusability.
+</Info>
+
+## Application Entry Point
+
+The application bootstraps through Angular's platform-browser-dynamic:
+
+```typescript src/main.ts
+import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+import { AppModule } from './app/app.module';
+
+platformBrowserDynamic()
+  .bootstrapModule(AppModule)
+  .catch(err => console.log(err));
+```
+
+## Key Architectural Benefits
+
+<AccordionGroup>
+  <Accordion title="Cross-Platform Code Sharing">
+    Write once, deploy to web, iOS, and Android with a single codebase. The combination of Ionic and Capacitor abstracts platform differences.
+  </Accordion>
+  
+  <Accordion title="Type Safety">
+    TypeScript interfaces and models provide compile-time type checking, reducing runtime errors and improving code quality.
+  </Accordion>
+  
+  <Accordion title="Separation of Concerns">
+    The component-service-model pattern ensures business logic is separated from presentation, making the codebase maintainable and testable.
+  </Accordion>
+  
+  <Accordion title="Lazy Loading">
+    Route-based code splitting reduces initial bundle size and improves application load time.
+  </Accordion>
+  
+  <Accordion title="Native Performance">
+    Capacitor provides direct access to native APIs while maintaining the development speed of web technologies.
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Project Structure" icon="folder-tree" href="/architecture/project-structure">
+    Explore the directory layout and file organization
+  </Card>
+  <Card title="Routing System" icon="route" href="/architecture/routing">
+    Learn about navigation and lazy loading
+  </Card>
+</CardGroup>

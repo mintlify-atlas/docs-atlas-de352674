@@ -1,0 +1,363 @@
+---
+title: 'RegistrosServiceTs'
+description: 'Core service for managing seafood dish records in the Sushi Restaurant App'
+---
+
+## Overview
+
+The `RegistrosServiceTs` is an Angular injectable service that manages the restaurant's seafood dish catalog. It provides methods to retrieve, display, and delete dish records (registros), maintaining an in-memory data store of 6 signature seafood dishes.
+
+<Info>
+This service is provided at the root level (`providedIn: 'root'`), making it a singleton available throughout the application.
+</Info>
+
+## Data Structure
+
+### Registro Interface
+
+Each dish record follows the `Registro` interface structure:
+
+<ResponseField name="id" type="string" required>
+  Unique identifier for the dish
+</ResponseField>
+
+<ResponseField name="nombre" type="string" required>
+  Name of the seafood dish (e.g., "Ceviche de Pescado")
+</ResponseField>
+
+<ResponseField name="foto" type="string" required>
+  URL to the dish's photo (using Unsplash or Bing image CDN)
+</ResponseField>
+
+<ResponseField name="observaciones" type="string[]" required>
+  Array of ingredients or preparation notes for the dish
+</ResponseField>
+
+### Default Dish Catalog
+
+The service initializes with 6 signature seafood dishes:
+
+```typescript
+private registros: Registro[] = [
+  {
+    id: '1',
+    nombre: 'Ceviche de Pescado',
+    foto: 'https://images.unsplash.com/photo-1535399831218-d5bd36d1a6b3?auto=format&fit=crop&w=500&q=60',
+    observaciones: [
+      'Pescado fresco',
+      'Limón',
+      'Cebolla morada',
+      'Chile serrano',
+    ],
+  },
+  {
+    id: '2',
+    nombre: 'Cóctel de Camarón',
+    foto: 'https://images.unsplash.com/photo-1559715745-e1b33a271c8f?auto=format&fit=crop&w=500&q=60',
+    observaciones: [
+      'Camarón pacotilla',
+      'Salsa cátsup especial',
+      'Aguacate',
+      'Galletas saladas',
+    ],
+  },
+  {
+    id: '3',
+    nombre: 'Tacos de Pescado',
+    foto: 'https://tse3.mm.bing.net/th/id/OIP.mIuAEWgQERs2OuHLMhfrlAHaE8?pid=Api&P=0&h=180',
+    observaciones: [
+      'Pescado capeado',
+      'Tortilla de harina',
+      'Col morada',
+      'Aderezo de chipotle',
+    ],
+  },
+  {
+    id: '4',
+    nombre: 'Aguachile Verde',
+    foto: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=500&q=60',
+    observaciones: [
+      'Camarón crudo',
+      'Jugo de limón',
+      'Chile serrano',
+      'Pepino',
+      'Cebolla',
+    ],
+  },
+  {
+    id: '5',
+    nombre: 'Filete al Mojo de Ajo',
+    foto: 'https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?auto=format&fit=crop&w=500&q=60',
+    observaciones: [
+      'Filete de mojarra',
+      'Ajo dorado',
+      'Arroz blanco',
+      'Ensalada fresca',
+    ],
+  },
+  {
+    id: '6',
+    nombre: 'Pulpo Zarandeado',
+    foto: 'https://tse2.mm.bing.net/th/id/OIP.-Wv38sBv-5EvZ9_ux_fOjQHaE8?pid=Api&P=0&h=180',
+    observaciones: [
+      'Tentáculos de pulpo',
+      'Adobo especial',
+      'A las brasas',
+      'Papas gajo',
+    ],
+  },
+];
+```
+
+## Methods
+
+### getRegistros()
+
+Retrieves all dish records from the service.
+
+<ParamField path="returns" type="Registro[]">
+  Returns a shallow copy of the entire registros array
+</ParamField>
+
+<CodeGroup>
+
+```typescript Method Signature
+getRegistros(): Registro[]
+```
+
+```typescript Implementation
+getRegistros() {
+  return [...this.registros];
+}
+```
+
+```typescript Usage Example (HomePage)
+import { Component, OnInit } from '@angular/core';
+import { RegistrosServiceTs } from './home.service';
+import { Registro } from './home.model';
+
+@Component({
+  selector: 'app-home',
+  templateUrl: './home.page.html',
+  styleUrls: ['./home.page.scss'],
+  standalone: false,
+})
+export class HomePage implements OnInit {
+  registros: Registro[] = [];
+
+  constructor(private registrosService: RegistrosServiceTs) {}
+
+  ngOnInit() {
+    this.registros = this.registrosService.getRegistros();
+  }
+}
+```
+
+</CodeGroup>
+
+<Note>
+The method returns a spread copy (`[...this.registros]`) to prevent direct mutation of the internal array, following immutability best practices.
+</Note>
+
+---
+
+### getRegistro()
+
+Retrieves a single dish record by its ID.
+
+<ParamField path="registroId" type="string" required>
+  The unique identifier of the dish to retrieve
+</ParamField>
+
+<ParamField path="returns" type="Registro | undefined">
+  Returns a shallow copy of the matching registro object, or undefined if not found
+</ParamField>
+
+<CodeGroup>
+
+```typescript Method Signature
+getRegistro(registroId: string): Registro | undefined
+```
+
+```typescript Implementation
+getRegistro(registroId: string) {
+  return {
+    ...this.registros.find((registro) => registro.id === registroId),
+  };
+}
+```
+
+```typescript Usage Example (DetalleRegistroPage)
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { RegistrosServiceTs } from '../home.service';
+
+@Component({
+  selector: 'app-detalle-registro',
+  templateUrl: './detalle-registro.page.html',
+  styleUrls: ['./detalle-registro.page.scss'],
+})
+export class DetalleRegistroPage implements OnInit {
+  registro: any = [];
+
+  constructor(
+    private activateRoute: ActivatedRoute,
+    private registrosService: RegistrosServiceTs
+  ) {}
+
+  ngOnInit() {
+    this.activateRoute.paramMap.subscribe((paramMap) => {
+      let recipeId: string = String(paramMap.get('registroId'));
+      this.registro = this.registrosService.getRegistro(recipeId);
+      console.log(this.registro);
+    });
+  }
+}
+```
+
+</CodeGroup>
+
+<Warning>
+This method returns a spread of the found object, which means if no registro is found, it will return an empty object `{}` rather than `undefined`. Consider adding null checks in your components.
+</Warning>
+
+---
+
+### deleteRegistro()
+
+Removes a dish record from the catalog by filtering it out of the array.
+
+<ParamField path="registroId" type="string" required>
+  The unique identifier of the dish to delete
+</ParamField>
+
+<ParamField path="returns" type="void">
+  This method does not return a value
+</ParamField>
+
+<CodeGroup>
+
+```typescript Method Signature
+deleteRegistro(registroId: string): void
+```
+
+```typescript Implementation
+deleteRegistro(registroId: string) {
+  this.registros = this.registros.filter(
+    (registro) => registro.id !== registroId,
+  );
+}
+```
+
+```typescript Usage Example (DetalleRegistroPage)
+import { AlertController } from '@ionic/angular';
+import { Router } from '@angular/router';
+import { RegistrosServiceTs } from '../home.service';
+
+async deleteRegistro() {
+  const alertElement = await this.alertCtrl.create({
+    header: '¿Estas seguro de eliminar baboso?',
+    message: 'Se eliminara el registro',
+    buttons: [
+      { text: 'cancelar', role: 'cancel' },
+      {
+        text: 'eliminar',
+        handler: () => {
+          this.registrosService.deleteRegistro(this.registro.id);
+          this.router.navigate(['/home']);
+        },
+      },
+    ],
+  });
+
+  await alertElement.present();
+}
+```
+
+</CodeGroup>
+
+<Info>
+The deletion is permanent for the current session. Since the service uses an in-memory store, deleted records will reappear when the application restarts.
+</Info>
+
+---
+
+### addRegistro()
+
+<Warning>
+This method is currently a placeholder with no implementation.
+</Warning>
+
+```typescript
+addRegistro() {}
+```
+
+To implement this method, you would typically accept a `Registro` object and add it to the internal array:
+
+```typescript
+addRegistro(registro: Registro) {
+  this.registros.push(registro);
+}
+```
+
+## Service Injection
+
+The service can be injected into any Angular component or service:
+
+```typescript
+import { RegistrosServiceTs } from './home/home.service';
+
+@Component({
+  // component configuration
+})
+export class MyComponent {
+  constructor(private registrosService: RegistrosServiceTs) {}
+}
+```
+
+## Best Practices
+
+<AccordionGroup>
+
+<Accordion title="Immutability">
+The service returns shallow copies of data using the spread operator (`...`), preventing direct mutation of the internal state. This is a good practice for maintaining data integrity.
+</Accordion>
+
+<Accordion title="Singleton Pattern">
+With `providedIn: 'root'`, Angular ensures only one instance of `RegistrosServiceTs` exists throughout the application, maintaining consistent state across all components.
+</Accordion>
+
+<Accordion title="Data Persistence">
+Currently, the service uses in-memory storage. For production applications, consider:
+- Integrating with a backend API
+- Using Ionic Storage for local persistence
+- Implementing NgRx or another state management solution
+</Accordion>
+
+<Accordion title="Type Safety">
+Always type your component properties with the `Registro` interface to leverage TypeScript's type checking and IDE autocomplete features.
+</Accordion>
+
+</AccordionGroup>
+
+## Related Resources
+
+<CardGroup cols={2}>
+
+<Card title="Registro Interface" icon="code" href="/models/registro">
+  Learn about the Registro data model structure
+</Card>
+
+<Card title="HomePage Component" icon="house" href="/components/home-page">
+  See how the home page displays all registros
+</Card>
+
+<Card title="DetalleRegistroPage" icon="file-lines" href="/components/detail-page">
+  View and delete individual dish records
+</Card>
+
+<Card title="Angular Services" icon="angular" href="https://angular.dev/guide/di/creating-injectable-service">
+  Official Angular documentation on services
+</Card>
+
+</CardGroup>

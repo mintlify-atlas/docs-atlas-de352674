@@ -1,0 +1,259 @@
+---
+title: 'HomePage Component'
+description: 'The main menu listing component that displays all restaurant dishes'
+icon: 'house'
+---
+
+## Overview
+
+The `HomePage` component is the main landing page of the Sushi Restaurant App. It displays a scrollable list of all available menu items (dishes) with images, names, and navigation to detail pages.
+
+**Location**: `src/app/home/home.page.ts`
+
+## Component Class
+
+<CodeGroup>
+
+```typescript home.page.ts
+import { Component, OnInit } from '@angular/core';
+import { RegistrosServiceTs } from './home.service';
+import { Registro } from './home.model';
+
+@Component({
+  selector: 'app-home',
+  templateUrl: './home.page.html',
+  styleUrls: ['./home.page.scss'],
+  standalone: false,
+})
+export class HomePage implements OnInit {
+  registros: Registro[] = [];
+
+  constructor(private registrosService: RegistrosServiceTs) {}
+
+  ngOnInit() {
+    this.registros = this.registrosService.getRegistros();
+  }
+}
+```
+
+```typescript home.model.ts
+export interface Registro {
+  id: string;
+  nombre: string;
+  foto: string;
+  observaciones: string[];
+}
+```
+
+</CodeGroup>
+
+### Properties
+
+<ParamField path="registros" type="Registro[]" default="[]">
+  Array that stores all menu items (dishes) retrieved from the service. Each registro represents a dish with its details.
+</ParamField>
+
+### Dependencies
+
+<ParamField path="registrosService" type="RegistrosServiceTs">
+  Injected service that provides methods to fetch and manage menu items (registros). Used to retrieve the list of dishes on component initialization.
+</ParamField>
+
+## Lifecycle Hooks
+
+### ngOnInit()
+
+Called when the component initializes. Fetches all menu items from the `RegistrosServiceTs` service and populates the `registros` array.
+
+```typescript
+ngOnInit() {
+  this.registros = this.registrosService.getRegistros();
+}
+```
+
+<Info>
+The service returns a copy of the registros array to prevent direct mutation of the original data.
+</Info>
+
+## Template
+
+The template uses Ionic components to create a beautiful, card-based menu layout with a custom header and styled list items.
+
+<CodeGroup>
+
+```html home.page.html
+<ion-header class="ion-no-border" [translucent]="true">
+  <ion-toolbar class="bg-blue-900 text-black shadow-md">
+    <ion-title class="text-center text-xl font-bold tracking-widest uppercase">
+      🌊 El Faro del Mar
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="bg-cyan-50">
+  <ion-header collapse="condense" class="ion-no-border">
+    <ion-toolbar class="bg-transparent">
+      <ion-title
+        size="large"
+        class="text-blue-900 font-extrabold text-4xl pb-4"
+      >
+        Menú
+      </ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="px-4 py-6">
+    <ion-list class="bg-transparent" lines="none">
+      <ion-item
+        *ngFor="let registro of registros"
+        [routerLink]="['/home', registro.id]"
+        class="mb-4 bg-white rounded-2xl shadow-sm border border-cyan-100 hover:shadow-md transition-all duration-300"
+        detail="true"
+        detail-icon="chevron-forward-outline"
+      >
+        <ion-avatar
+          slot="start"
+          class="border-2 border-teal-400 p-0.5 bg-white shadow-sm"
+        >
+          <ion-img
+            [src]="registro.foto"
+            class="rounded-full object-cover"
+          ></ion-img>
+        </ion-avatar>
+
+        <ion-label class="ml-3 my-3">
+          <h2 class="text-lg font-bold text-blue-900 mb-1">
+            {{registro.nombre}}
+          </h2>
+          <p class="text-sm text-cyan-600 font-medium">Ver platillo...</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </div>
+</ion-content>
+```
+
+</CodeGroup>
+
+### Template Features
+
+<CardGroup cols={2}>
+  <Card title="Collapsible Header" icon="up-down">
+    The header uses Ionic's collapsible toolbar feature, expanding when scrolled to the top to show a large "Menú" title.
+  </Card>
+  
+  <Card title="Dynamic List" icon="list">
+    Uses `*ngFor` to iterate over the `registros` array and create a list item for each dish.
+  </Card>
+  
+  <Card title="Navigation" icon="arrow-right">
+    Each item has a `[routerLink]` that navigates to the detail page with the dish ID as a parameter.
+  </Card>
+  
+  <Card title="Tailwind Styling" icon="palette">
+    Extensive use of Tailwind CSS classes for modern, responsive design with hover effects and shadows.
+  </Card>
+</CardGroup>
+
+## Menu Item Display
+
+Each menu item in the list displays:
+
+1. **Avatar Image**: Circular thumbnail of the dish with a teal border
+2. **Dish Name**: Bold, large text in blue-900 color
+3. **Call to Action**: "Ver platillo..." text to indicate the item is clickable
+4. **Navigation Arrow**: Chevron icon indicating the item links to a detail page
+
+<Tabs>
+  <Tab title="Visual Structure">
+    ```
+    ┌─────────────────────────────────────┐
+    │  🌊 El Faro del Mar                 │  ← Header
+    ├─────────────────────────────────────┤
+    │                                     │
+    │  Menú                              │  ← Large Title
+    │                                     │
+    │  ┌───────────────────────────────┐ │
+    │  │ [img] Ceviche de Pescado  >   │ │  ← Menu Item
+    │  │       Ver platillo...         │ │
+    │  └───────────────────────────────┘ │
+    │  ┌───────────────────────────────┐ │
+    │  │ [img] Cóctel de Camarón   >   │ │
+    │  │       Ver platillo...         │ │
+    │  └───────────────────────────────┘ │
+    │                                     │
+    └─────────────────────────────────────┘
+    ```
+  </Tab>
+  
+  <Tab title="Data Flow">
+    ```
+    HomePage Component
+         ↓
+    ngOnInit() called
+         ↓
+    RegistrosServiceTs.getRegistros()
+         ↓
+    Returns Registro[] array
+         ↓
+    Template renders with *ngFor
+         ↓
+    Each item links to /home/:id
+    ```
+  </Tab>
+</Tabs>
+
+## Styling
+
+The component uses Tailwind CSS for styling, creating a clean, modern ocean/beach theme:
+
+- **Color Scheme**: Blue-900 for headers, cyan-50 for background, teal accents
+- **Layout**: Padded cards with rounded corners and subtle shadows
+- **Transitions**: Hover effects on cards for better UX
+- **Typography**: Bold headings with careful spacing and tracking
+
+<Note>
+The SCSS file (`home.page.scss`) contains minimal custom styles, as most styling is handled through Tailwind utility classes in the template.
+</Note>
+
+## Usage Example
+
+The HomePage component is automatically loaded when navigating to `/home` route:
+
+```typescript
+// In app-routing.module.ts or home-routing.module.ts
+{
+  path: 'home',
+  loadChildren: () => import('./home/home.module').then(m => m.HomePageModule)
+}
+```
+
+## Integration with Service
+
+The component relies on `RegistrosServiceTs` to provide menu data:
+
+```typescript
+// Service returns a copy of the internal array
+getRegistros() {
+  return [...this.registros];
+}
+```
+
+<Warning>
+The service returns a shallow copy of the registros array. Modifying nested properties (like the `observaciones` array) will still affect the original data.
+</Warning>
+
+## Navigation
+
+When a user taps a menu item, they navigate to the detail page:
+
+```html
+[routerLink]="['/home', registro.id]"
+```
+
+This creates routes like:
+- `/home/1` → Ceviche de Pescado
+- `/home/2` → Cóctel de Camarón
+- `/home/3` → Tacos de Pescado
+
+See the [DetailPage Component](/components/detail-page) documentation for more information on the detail view.

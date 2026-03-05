@@ -1,0 +1,268 @@
+---
+title: 'Tailwind CSS'
+description: 'Learn how Tailwind CSS is configured and used throughout the Sushi Restaurant App'
+---
+
+## Overview
+
+The Sushi Restaurant App uses Tailwind CSS for utility-first styling, creating a cohesive marine-themed design system. Tailwind is integrated with Ionic components to provide a modern, responsive interface.
+
+## Configuration
+
+The Tailwind configuration is minimal and extends the default Tailwind theme:
+
+```javascript tailwind.config.js
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: ["./src/**/*.{html,ts}"],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};
+```
+
+### Content Paths
+
+Tailwind scans all HTML and TypeScript files in the `src/` directory to detect which utility classes are used, enabling automatic purging of unused styles in production.
+
+## Integration with Ionic
+
+Tailwind is imported in `global.scss` alongside Ionic's core styles:
+
+```scss global.scss
+@import "@ionic/angular/css/core.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+<Note>
+  The order matters: Tailwind's base layer comes after Ionic's core CSS to ensure proper styling hierarchy.
+</Note>
+
+## Marine Theme Color Palette
+
+The app uses a consistent marine-inspired color scheme:
+
+<CodeGroup>
+```html Primary Colors
+<!-- Deep ocean blue for headers and emphasis -->
+<ion-toolbar class="bg-blue-900 text-white">
+  <ion-title>El Faro del Mar</ion-title>
+</ion-toolbar>
+
+<!-- Light cyan for backgrounds -->
+<ion-content class="bg-cyan-50">
+  <!-- Content -->
+</ion-content>
+```
+
+```html Accent Colors
+<!-- Teal/cyan accents for interactive elements -->
+<ion-avatar class="border-2 border-teal-400">
+  <ion-img [src]="registro.foto"></ion-img>
+</ion-avatar>
+
+<p class="text-cyan-600 font-medium">Ver platillo...</p>
+
+<div class="bg-teal-400 h-1.5 w-24 rounded-full"></div>
+```
+</CodeGroup>
+
+### Color Usage Guide
+
+| Color Class | Usage | Example |
+|------------|-------|--------|
+| `bg-blue-900` | Primary headers, toolbars | Navigation bar |
+| `text-blue-900` | Primary text, headings | Page titles, item names |
+| `bg-cyan-50` | Page backgrounds | Content areas |
+| `text-cyan-600` | Secondary text, links | Action prompts |
+| `border-cyan-100` | Subtle borders | Card outlines |
+| `bg-teal-400` | Accent elements | Decorative bars, borders |
+| `text-teal-500` | Icons, success states | Checkmark icons |
+
+## Real-World Examples
+
+### Home Page Header
+
+From `home.page.html:2-6`:
+
+```html
+<ion-header class="ion-no-border" [translucent]="true">
+  <ion-toolbar class="bg-blue-900 text-black shadow-md">
+    <ion-title class="text-center text-xl font-bold tracking-widest uppercase">
+      🌊 El Faro del Mar
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+```
+
+This combines:
+- **bg-blue-900**: Deep ocean blue background
+- **text-black**: Black text for contrast
+- **shadow-md**: Medium shadow for depth
+- **text-center, text-xl, font-bold**: Typography utilities
+- **tracking-widest, uppercase**: Stylistic text transformations
+
+### Menu List Items
+
+From `home.page.html:23-46`:
+
+```html
+<ion-item
+  *ngFor="let registro of registros"
+  [routerLink]="['/home', registro.id]"
+  class="mb-4 bg-white rounded-2xl shadow-sm border border-cyan-100 hover:shadow-md transition-all duration-300"
+  detail="true"
+>
+  <ion-avatar class="border-2 border-teal-400 p-0.5 bg-white shadow-sm">
+    <ion-img [src]="registro.foto"></ion-img>
+  </ion-avatar>
+
+  <ion-label class="ml-3 my-3">
+    <h2 class="text-lg font-bold text-blue-900 mb-1">
+      {{registro.nombre}}
+    </h2>
+    <p class="text-sm text-cyan-600 font-medium">Ver platillo...</p>
+  </ion-label>
+</ion-item>
+```
+
+Key styling techniques:
+- **Rounded corners**: `rounded-2xl` for modern card design
+- **Hover effects**: `hover:shadow-md` for interactivity
+- **Transitions**: `transition-all duration-300` for smooth animations
+- **Spacing**: `mb-4`, `ml-3`, `my-3` for consistent layout
+- **Border accent**: `border-teal-400` for visual interest
+
+### Detail Page Hero Section
+
+From `detalle-registro.page.html:16-34`:
+
+```html
+<div class="relative h-80 bg-blue-900">
+  <img
+    [src]="registro.foto"
+    class="w-full h-full object-cover opacity-90"
+  />
+  <div class="absolute inset-0 bg-gradient-to-t from-blue-900/80 to-transparent"></div>
+
+  <div class="absolute bottom-0 left-0 p-6 w-full">
+    <h1 class="text-4xl font-extrabold text-white tracking-tight drop-shadow-lg">
+      {{registro.nombre}}
+    </h1>
+    <div class="h-1.5 w-24 bg-teal-400 rounded-full mt-3 mb-6"></div>
+  </div>
+</div>
+```
+
+Advanced techniques:
+- **Position utilities**: `relative`, `absolute`, `inset-0` for layering
+- **Gradient overlays**: `bg-gradient-to-t from-blue-900/80` for image darkening
+- **Object fit**: `object-cover` for proper image scaling
+- **Drop shadows**: `drop-shadow-lg` for text readability
+- **Decorative elements**: `h-1.5 w-24 bg-teal-400 rounded-full` accent bar
+
+### Content Card
+
+From `detalle-registro.page.html:37-46`:
+
+```html
+<div class="bg-white rounded-3xl p-6 shadow-xl border border-cyan-100/50">
+  <div class="flex items-center mb-6">
+    <div class="bg-teal-100 p-3 rounded-full mr-4">
+      <ion-icon name="restaurant-outline" class="text-2xl text-teal-600"></ion-icon>
+    </div>
+    <h2 class="text-2xl font-bold text-blue-900">Ingredientes Clave</h2>
+  </div>
+</div>
+```
+
+Design patterns:
+- **Card elevation**: `shadow-xl` for prominent cards
+- **Soft borders**: `border-cyan-100/50` using opacity
+- **Flexbox layouts**: `flex items-center` for alignment
+- **Icon backgrounds**: `bg-teal-100 rounded-full` for icon containers
+
+## Common Patterns
+
+### Cards and Containers
+
+```html
+<!-- Standard card -->
+<div class="bg-white rounded-2xl shadow-sm border border-cyan-100">
+  <!-- Content -->
+</div>
+
+<!-- Elevated card -->
+<div class="bg-white rounded-3xl shadow-xl border border-cyan-100/50">
+  <!-- Content -->
+</div>
+```
+
+### Buttons
+
+```html
+<!-- Primary action button -->
+<button class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-2xl shadow-md border-b-4 border-red-700 active:border-b-0 active:mt-5 transition-all">
+  <ion-icon name="trash-outline" class="text-xl mr-2"></ion-icon>
+  Eliminar Platillo
+</button>
+```
+
+<Note>
+  The button uses a 3D effect with `border-b-4` and `active:border-b-0` combined with `active:mt-5` to simulate a pressed state.
+</Note>
+
+### Typography
+
+```html
+<!-- Page title -->
+<h1 class="text-4xl font-extrabold text-white tracking-tight drop-shadow-lg">
+  Title
+</h1>
+
+<!-- Section heading -->
+<h2 class="text-2xl font-bold text-blue-900">
+  Heading
+</h2>
+
+<!-- Body text -->
+<p class="text-lg font-medium text-gray-700">
+  Content
+</p>
+
+<!-- Secondary text -->
+<p class="text-sm text-cyan-600 font-medium">
+  Secondary
+</p>
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Use Consistent Spacing" icon="ruler">
+    Stick to Tailwind's spacing scale (4px increments). Use `p-4`, `mb-6`, `mx-3` rather than custom values.
+  </Card>
+  
+  <Card title="Combine with Ionic Classes" icon="layer-group">
+    Use Ionic utilities like `ion-no-border` alongside Tailwind classes for optimal integration.
+  </Card>
+  
+  <Card title="Leverage Transitions" icon="wand-magic-sparkles">
+    Add `transition-all duration-300` to interactive elements for smooth state changes.
+  </Card>
+  
+  <Card title="Use Color Opacity" icon="droplet">
+    Apply opacity with `/` notation: `bg-blue-900/80` for semi-transparent backgrounds.
+  </Card>
+</CardGroup>
+
+## Performance
+
+Tailwind automatically purges unused styles in production builds, keeping the CSS bundle size minimal. The configuration ensures only classes used in your `.html` and `.ts` files are included in the final build.
+
+<Tip>
+  When adding custom components, make sure they're in the `src/` directory so Tailwind can detect and include the utility classes you use.
+</Tip>
